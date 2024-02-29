@@ -1,0 +1,269 @@
+---
+title: "BACHMI DIABLO GENESETS M0 (high vs low) vs datasets M0"
+output: html_document
+date: "2023-10-30"
+---
+
+
+
+## 1. DIABLO between genesets M0 high vs low responders & datasets at M0
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide', fig.height=7}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(ggpubr)
+library(ggbeeswarm)
+library(rstatix)
+library(ggplot2)
+library(gridExtra)
+library(lmerTest)
+library(kableExtra)
+library(pheatmap)
+library(RColorBrewer)
+library(formattable)
+library(mixOmics)
+library(org.Hs.eg.db)
+library(clusterProfiler)
+library(SummarizedExperiment)
+library(NetActivity)
+library(limma)
+
+annotationfile <- read.table(
+  file = ("C:/Users/csanchez1/Downloads/HuGene-2_1-st-v1.na36.hg19.transcript.csv"),
+  header = TRUE,
+  sep = ",",
+  quote = "\"",
+  dec = ".")
+annotationfile$gene <- lapply(strsplit(as.character(annotationfile$gene_assignment), split = " /// | // "), function(x) x[2])
+annotationfile$probeset_id<-as.character(annotationfile$probeset_id)
+
+
+cknorm<- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/ck_bachmi_susana_normalitzat_.csv", sep=";")
+colnames(cknorm)[20:49]<-c("G-CSF","GM-CSF","HGF","IFN-a","IFN-g","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1a","MIP-1b","RANTES","TNF-a","VEGF","IL-17","IL-1b","IL-7","TGF-b","CXCL13","IL-21")
+
+cknorm<- cknorm[c(colnames(cknorm[1:16]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-a","TGF-b","IFN-a", "IFN-g", "IL-1RA", "IL-1b", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1a", "MIP-1b", "EOTAXIN", "RANTES","CXCL13")]
+cknorm<-cknorm[!cknorm$responder=="",]
+cknorm$responder<-factor(cknorm$responder, levels=c("low", "high"))
+cknorm$Day<-factor(cknorm$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+cknorm[17:49]<-sapply(cknorm[17:49], log10)
+
+cknorm2<-cknorm %>%
+  pivot_longer(
+    cols = EGF:CXCL13,
+    names_to = 'analyte',
+    values_to = 'log10_mfi')
+
+gem.cli.df <- readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/NEW_BACHMI_database_20150721_GMP_M0.xlsx")
+gem.cli.df[164,16] <- 37.7
+gem.cli.df[164,17] <- 1
+gem.cli.df[165,16] <- NA
+gem.cli.df[165,17] <- NA
+gem.cli.df[244,31] <- 0
+gem.cli.df<-gem.cli.df[!is.na(gem.cli.df$responder),]
+gem.cli.df$responder<-factor(gem.cli.df$responder, levels = c("low", "high"))
+gem.cli.df$Day<-factor(gem.cli.df$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+gem.cli.df<-gem.cli.df[!gem.cli.df$Day=="D01"& !gem.cli.df$Day=="D07"& !gem.cli.df$Day=="M1",]
+hemo2<-gem.cli.df %>%
+  pivot_longer(
+    cols = Hemoglobin:platelet,
+    names_to = 'type',
+    values_to = 'counts')
+hemo2$Day<-drop(hemo2$Day)
+
+
+dc<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/BACHMI DC ALL 22June2015_Susana_frequencies.xlsx")
+dc$Malaria<-factor(dc$Malaria,  levels= c("parasitemia", "no parasitemia"))
+dc<-dc[!is.na(dc$responder),]
+dc$responder<-factor(dc$responder, levels=c("low", "high"))
+dc$Day<-factor(dc$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+dc2<-dc %>%
+  pivot_longer(
+    cols = Lymphos:"immature DC",
+    names_to = 'cell_population',
+    values_to = 'freq')
+
+igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
+igm$responder<-factor(igm$responder, levels = c("low", "high"))
+
+igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+igg$responder<-factor(igg$responder, levels = c("low", "high"))
+
+igm[15:36]<-sapply(igm[15:36], log10)
+igm<-igm[!is.na(igm$responder),]
+
+colnames(igm)[15:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4", 
+"PfRH5","MSP-1 19","BSA","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2",
+"DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igm2<-igm %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+
+igm2$fullname<-paste(igm2$Ig, igm2$antigen, sep="-")
+
+igg[16:36]<-sapply(igg[16:36], log10)
+igg<-igg[!is.na(igg$responder),]
+igg$Day<-factor(igg$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+
+colnames(igg)[16:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4",
+"PfRH5","MSP-1 19","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2",
+"DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igg2<-igg %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+igg2$fullname<-paste(igg2$Ig, igg2$antigen, sep="-")
+igg2<-igg2[,-15]
+ig2<-rbind(igm2, igg2)
+
+ig2$Day<-factor(ig2$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+
+
+cknorm3<-cknorm2[cknorm2$Day==c("M0"),]
+mfisd7<-c()
+for(i in unique(cknorm3$analyte)){
+  cknorm4<-cknorm3[cknorm3$analyte==i,]
+  mfisd7=cbind(mfisd7, cknorm4$log10_mfi)
+  mfisd7<-mfisd7
+}
+colnames(mfisd7)<-unique(cknorm3$analyte)
+rownames(mfisd7)<-unique(cknorm3$Label)
+
+hemo3<-hemo2%>%dplyr::filter(Day%in%c("M0"))
+hemo3<-dplyr::filter(hemo3, Malaria=="parasitemia")
+hemodiablo<-c()
+for(i in unique(hemo3$type)){
+hemo4<-hemo3[hemo3$type==i,]
+hemodiablo=cbind(hemodiablo, hemo4$counts)
+hemodiablo<-hemodiablo
+}
+colnames(hemodiablo)<-unique(hemo3$type)
+rownames(hemodiablo)<-unique(hemo3$Label)
+
+
+dc2<-dc2[!is.na(dc2$responder),]
+dc3<-dc2%>%dplyr::filter(Day%in%c("M0"))
+dc3<-dplyr::filter(dc3, Malaria=="parasitemia")
+dcdiablo<-c()
+for(i in unique(dc3$cell_population)){
+dc4<-dc3[dc3$cell_population==i,]
+dcdiablo=cbind(dcdiablo, dc4$freq)
+dcdiablo<-dcdiablo
+}
+colnames(dcdiablo)<-unique(dc3$cell_population)
+rownames(dcdiablo)<-unique(dc3$Label)
+dcdiablo.2<-dcdiablo
+
+ig2.3<-ig2[ig2$Day=="M0",]
+ig2diab<-c()
+for(i in unique(ig2.3$fullname)){
+ig2.4<-ig2.3[ig2.3$fullname==i,]
+ig2diab=cbind(ig2diab, ig2.4$log10_conc)
+ig2diab<-ig2diab
+}
+colnames(ig2diab)<-unique(ig2.3$fullname)
+rownames(ig2diab)<-unique(ig2.3$Label)
+
+stim_geneset_scores<-read.csv("C:/Users/csanchez1/Desktop/BACHMI/Scripts/stim_geneset_scores_M0_high_vs_low.csv", sep=",", row.names = NULL)
+
+stim_geneset_scoresm0<-stim_geneset_scores
+stim_geneset_scoresm0<-stim_geneset_scoresm0[-1]
+stim_geneset_scoresm0$Label<-gsub("_", "", stim_geneset_scoresm0$Label)
+btmsdiablo<-pivot_wider(stim_geneset_scoresm0, names_from = geneset, values_from = score )
+btmsdiablo<-as.data.frame(btmsdiablo)
+rownames(btmsdiablo)<-btmsdiablo$Label
+btmsdiablo<-btmsdiablo[order(match(rownames(btmsdiablo),rownames(mfisd7))),]
+
+Y<-cknorm4$responder
+
+X=list(BTMs=btmsdiablo[-1], Cytokines=mfisd7, hemo=hemodiablo, DC=dcdiablo, ab=ig2diab)
+list.keepX <- list(BTMs = c(35, 20), Cytokines=c(8,6), hemo=c(3,3), DC=c(3,4), ab=c(10,7))
+MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX,)
+
+plotIndiv(MyResult.diablo, ind.names = FALSE, legend = TRUE,
+title = 'DIABLO Sample Plots', col=c("darkgreen", "#B2DF8A"))
+```
+
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=11, fig.width=19}
+
+circ<-circosPlot(MyResult.diablo, cutoff=0.8,  line = TRUE,var.adj = 1.6, size.variables = 0.7, color.Y=c("#B2DF8A", "darkgreen"), size.labels=1)
+
+abcor<-c()
+for (i in colnames(circ)){
+  if (sum(circ[i,]>0.8) >0 | sum(circ[i,]<(-0.8))>0){
+    abcor<-c(i, abcor)
+    abcor<-abcor
+  }
+}
+
+create_plot <- function(antigen, circ, genest, dataset, gem.cli.df, name) {
+  g <- names(which((circ[, antigen] > 0.8)|(circ[, antigen] < (-0.8))))
+  if (length(intersect(g, colnames(genest)))>1){
+    ls <- genest[, intersect(g, colnames(genest))]
+    ls$antigen <- dataset[, antigen]
+    ls$Label <- rownames(ls)
+    newd2 <- merge(ls, gem.cli.df[c("Label", "responder")], by = "Label")
+    datgat <- newd2 %>%
+    as_tibble() %>%
+    gather(key = "variable", value = "exprs", -c(antigen, responder, Label))
+    # Crear gráfico
+      ylab_text <- ifelse(name == "dcdiablo", paste("%", antigen),
+                    ifelse(name == "hemodiablo", paste("counts", antigen), paste("log10(mfi)", antigen)))
+      position<-max(na.omit(datgat$antigen))+0.05
+    plot<-ggplot(datgat, aes(x = exprs, y = antigen)) +
+    facet_wrap(~variable, scales = "free") +
+    geom_point(aes(colour = responder, size=4)) +
+    geom_smooth(method = lm, color = "blue") +
+    stat_cor(method = "pearson", p.digits = 2, label.y = position, size=10) +
+    scale_color_manual(values = c("#B2DF8A", "darkgreen")) +
+    ylab(ylab_text)+       theme(strip.text.x = element_text(size = 24),axis.title =element_text(size=30),  legend.text = element_text(size=30), legend.title = element_text(size=30))
+    return(list(plot=plot))
+  }}
+
+```
+
+
+## 2. Correlations Genesets M0 & Cytokines M0 DIABLO circ >0.8.
+
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=20, fig.width=30}
+# Uso de la función
+for (i in (abcor)[10:18]){
+plot<-create_plot(i, circ, btmsdiablo, mfisd7, gem.cli.df, "mfisd7")
+  if (!is.null(plot)){
+  print(plot$plot)
+  }}
+```
+
+
+## 3. Correlations Genesets M0 & Antibodies M0 DIABLO circ >0.8.
+
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=13, fig.width=22}
+
+plot<-create_plot("IgG-PTRAMP", circ, btmsdiablo, ig2diab, gem.cli.df, "ig2diab")
+print(plot$plot)
+```
+
+
+## 4. Correlations Genesets M0 & DC M0 DIABLO circ >0.8.
+
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=20, fig.width=35}
+
+plot<-create_plot("Lymphos", circ, btmsdiablo, dcdiablo, gem.cli.df, "dcdiablo")
+print(plot$plot)
+
+```
+
+## 5. Correlations Genesets M0 & Hemo M0 DIABLO circ >0.8.
+
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=25, fig.width=35}
+
+for (i in (abcor)[5:9]){
+plot<-create_plot(i, circ, btmsdiablo, hemodiablo, gem.cli.df, "hemodiablo")
+  if (!is.null(plot)){
+  print(plot$plot)
+  }}
+```
+

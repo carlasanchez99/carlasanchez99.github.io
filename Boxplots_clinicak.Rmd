@@ -1,0 +1,67 @@
+---
+title: "Clinical outcomes in low/high responders"
+output: html_document
+---
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(ggpubr)
+library(ggbeeswarm)
+library(rstatix)
+library(ggplot2)
+library(gridExtra)
+library(kableExtra)
+library(formattable)
+gem.cli.df <- readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/NEW_BACHMI_database_20150721_GMP_M0.xlsx")
+gem.cli.df[164,16] <- 37.7
+gem.cli.df[164,17] <- 1
+gem.cli.df[165,16] <- NA
+gem.cli.df[165,17] <- NA
+gem.cli.df[244,31] <- 0
+
+gem.cli.dfres<-gem.cli.df[!is.na(gem.cli.df$responder),]
+gem.cli.dfres[,c(5,8,11,12,17,19,27,29,31,33,35,36,37,38)]<-lapply(gem.cli.dfres[,c(5,8,11,12,17,19,27,29,31,33,35,36,37,38)], as.factor)
+
+for (i in c(colnames(gem.cli.dfres)[c(5,9)])){
+  gem.cli.dfres1<-gem.cli.dfres[gem.cli.dfres$Day=="M0",]
+  grafic=ggplot(gem.cli.dfres1, aes(x=.data[[i]], fill=responder)) + ggtitle(i) +  
+  scale_fill_manual(values = c("darkgreen", "#B2DF8A"))+
+  geom_bar(position="dodge",colour="black") +theme_bw()
+  print(grafic)
+  #table1<-table(c(gem.cli.dfres[,i]), gem.cli.dfres$responder)
+  #data.frame(table1) %>% spread(colnames(table1)[1], Freq) %>% 
+     #regulartable %>% autofit()
+  print(formattable(table(as.factor(unlist(gem.cli.dfres1[i])), as.factor(unlist(gem.cli.dfres1[12])))))
+  print(paste("Fisher's test p-value:", fisher.test(table(as.factor(unlist(gem.cli.dfres1[i])), as.factor(unlist(gem.cli.dfres1[12]))))$p.value))
+ cat("\n")
+} 
+
+for (i in colnames(gem.cli.dfres)[sapply(gem.cli.dfres, is.factor)][5:14]){
+  gem.cli.dfres1<-gem.cli.dfres %>% drop_na(i) 
+  grafic=ggplot(gem.cli.dfres1, aes(x=.data[[i]], fill=responder)) + ggtitle(i) +  
+  scale_fill_manual(values = c("darkgreen", "#B2DF8A"))+
+  geom_bar(position="dodge",colour="black") +theme_bw()
+  print(grafic)
+  #table1<-table(c(gem.cli.dfres[,i]), gem.cli.dfres$responder)
+  #data.frame(table1) %>% spread(colnames(table1)[1], Freq) %>% 
+     #regulartable %>% autofit()
+  print(formattable(table(as.factor(unlist(gem.cli.dfres[i])), as.factor(unlist(gem.cli.dfres[12])))))
+  print(paste("Fisher's test p-value:", fisher.test(table(as.factor(unlist(gem.cli.dfres[i])), as.factor(unlist(gem.cli.dfres[12]))))$p.value))
+ cat("\n")
+} 
+
+for (i in colnames(gem.cli.dfres)[13:15]){
+  gem.cli.dfres1<-gem.cli.dfres %>% drop_na(i) 
+  grafic=ggplot(gem.cli.dfres1, aes(x=responder, y=.data[[i]], color=responder)) + ggtitle(i) +  
+  geom_boxplot(position="dodge")+scale_color_manual(values = c("darkgreen", "#B2DF8A"))+theme_bw()
+  print(grafic)
+  #table1<-table(c(gem.cli.dfres[,i]), gem.cli.dfres$responder)
+  #data.frame(table1) %>% spread(colnames(table1)[1], Freq) %>% 
+     #regulartable %>% autofit()
+  print(paste("Wilcox's test p-value:",wilcox.test(unlist(gem.cli.dfres[i]) ~ unlist(gem.cli.dfres[12]))$p.value))
+ cat("\n")
+  } 
+```

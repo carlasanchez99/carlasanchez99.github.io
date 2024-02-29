@@ -1,0 +1,324 @@
+---
+title: "BACHMI_descriptiva"
+output:
+  html_document:
+    df_print: paged
+date: "2023-06-30"
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+library(knitr)
+library(dplyr)
+gem.cli.df <- readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/NEW_BACHMI_database_20150721_GMP_M0.xlsx")
+gem.cli.df[164,16] <- 37.7
+gem.cli.df[164,17] <- 1
+gem.cli.df[165,16] <- NA
+gem.cli.df[165,17] <- NA
+gem.cli.df[244,31] <- 0
+gem.cli.df <- gem.cli.df[,-c(21:22)]
+
+#Readall database and convert variables into factors
+
+ck <- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/All CK_BACHMI01_22June_Susana_concentracions.csv", sep=";")
+ck<-ck [ , c(1:14,45,47,49,15:44,46,48,50)]
+
+colnames(ck)[21:50]<-c("G-CSF","GM-CSF","HGF","IFN-α","IFN-γ","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1α","MIP-1β","RANTES","TNF-α","VEGF","IL-17","IL-1β","IL-7","CXCL13","IL-21","TGF-β")
+
+cknorm<- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/ck_bachmi_susana_normalitzat_.csv", sep=";")
+
+colnames(cknorm)[20:49]<-c("G-CSF","GM-CSF","HGF","IFN-α","IFN-γ","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1α","MIP-1β","RANTES","TNF-α","VEGF","IL-17","IL-1β","IL-7","TGF-β","CXCL13","IL-21")
+
+dc<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/BACHMI DC ALL 22June2015_Susana_frequencies.xlsx")
+
+igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
+
+igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+
+#TAULA DESCRIPTIVA
+gem.cli.df.un<-gem.cli.df %>% distinct(Volunteer, .keep_all=TRUE)
+gem.cli.df.un <- gem.cli.df.un[,-which(colMeans(is.na(gem.cli.df.un)) == 1)]
+kable(gem.cli.df.un[,-4])
+
+table(gem.cli.df.un$Route, gem.cli.df.un$sex)
+table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
+table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
+gem.cli.df.un%>%group_by(responder)
+```
+
+# PCA DC
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+dcpca<-dc[13:24]
+dcpca<-cbind(dc$Label,dcpca)
+dcpca<-dcpca[-261,]
+dcpca<-dcpca[-87,]
+dcpca<-dcpca[-c(6,10)] #Son els CD86+ mDC i CD86+ pDC que tenen 7 i 6 NA. 
+M <- log2(dcpca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(dcpca$`dc$Label` , pcaResults$x[,1:2])
+Original_id<-dcpca$`dc$Label`
+library(ggplot2)
+dcclin<-dc%>%filter(Label%in%dcpca$`dc$Label`)
+lab<-dcclin$Volunteer
+lab<-dcclin$Group
+lab<-dcclin$Phase
+lab<-dcclin$Route
+lab<-dcclin$Malaria
+lab<-dcclin$sex
+lab<-dcclin$responder_code
+lab<-dcclin$Day
+
+```
+
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-dcclin$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-dcclin$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-dcclin$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+
+```
+
+# Differences DC parasitemia/not parasitemia
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+dc$Day<-ifelse(dc$Day=="D21"|dc$Day=="M0", "D21/M0", dc$Day)
+dc$Day<-ifelse(dc$Day=="D22"|dc$Day=="M1", "D22/M1", dc$Day)
+dc$Day<-ifelse(dc$Day=="D23"|dc$Day=="M2", "D23/M2", dc$Day)
+for (i in colnames(dc[13:24])){
+  var_name_ticked<-paste0("`", i, "`")
+  print(ggplot(dc, aes_string("Day", var_name_ticked)) +
+    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+```
+
+
+# PCA IgG
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+iggpca<-igg[16:36]
+iggpca<-cbind(igg$Label,iggpca)
+M <- log2(iggpca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(iggpca$`igg$Label`, pcaResults$x[,1:2])
+library(ggplot2)
+iggclin<-igg%>%filter(Label%in%iggpca$`igg$Label`)
+lab<-iggclin$Volunteer
+lab<-iggclin$Group
+lab<-iggclin$Phase
+lab<-iggclin$Route
+lab<-iggclin$Malaria
+lab<-iggclin$sex
+lab<-iggclin$responder_code
+lab<-iggclin$Day
+
+
+```
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-iggclin$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-iggclin$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-iggclin$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+
+```
+
+# Differences IgG parasitemia/not parasitemia
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+igg$Day<-ifelse(igg$Day=="D21"|igg$Day=="M0", "D21/M0", igg$Day)
+igg$Day<-ifelse(igg$Day=="D22"|igg$Day=="M1", "D22/M1", igg$Day)
+igg$Day<-ifelse(igg$Day=="D23"|igg$Day=="M2", "D23/M2", igg$Day)
+igg[16:36]<-sapply(igg[16:36], log10)
+for (i in colnames(igg[16:36])){
+  var_name_ticked<-paste0("`", i, "`")
+  print(ggplot(igg, aes_string("Day", var_name_ticked)) +
+    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+```
+
+# PCA IgM
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
+igmpca<-igm[15:36]
+igmpca<-cbind(igm$Label,igmpca)
+M <- log2(igmpca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(igmpca$`igm$Label`, pcaResults$x[,1:2])
+library(ggplot2)
+igmclin<-igm%>%filter(Label%in%igmpca$`igm$Label`)
+lab<-igmclin$Volunteer
+lab<-igmclin$Group
+lab<-igmclin$Phase
+lab<-igmclin$Route
+lab<-igmclin$Malaria
+lab<-igmclin$sex
+lab<-igmclin$responder_code
+lab<-igmclin$Day
+
+```
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-igmclin$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-igmclin$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-igmclin$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+
+```
+
+
+# Differences IgM parasitemia/not parasitemia
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+igm$Day<-ifelse(igm$Day=="D21"|igm$Day=="M0", "D21/M0", igm$Day)
+igm$Day<-ifelse(igm$Day=="D22"|igm$Day=="M1", "D22/M1", igm$Day)
+igm$Day<-ifelse(igm$Day=="D23"|igm$Day=="M2", "D23/M2", igm$Day)
+igm[15:36]<-sapply(igm[15:36], log10)
+for (i in colnames(igm[15:36])){
+  var_name_ticked<-paste0("`", i, "`")
+  print(ggplot(igm, aes_string("Day", var_name_ticked)) +
+    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+```
+
+
+# PCA Citos nonorm
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+ckpca1<-ck[!ck$Day=="D90",]
+ckpca<-ckpca1[18:50]
+ckpca<-cbind(ckpca1$Label,ckpca)
+M <- log2(ckpca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(ckpca$`ckpca1$Label`, pcaResults$x[,1:2])
+library(ggplot2)
+lab<-ckpca1$Volunteer
+lab<-ckpca1$Group
+lab<-ckpca1$Phase
+lab<-ckpca1$Route
+lab<-ckpca1$Malaria
+lab<-ckpca1$sex
+lab<-ckpca1$responder_code
+lab<-ckpca1$Day
+
+```
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-ckpca1$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-ckpca1$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-ckpca1$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+
+```
+
+# Citos not normalized differences parasitemia/not parasitemia
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day)
+ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day)
+ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day)
+ck[18:50]<-sapply(ck[18:50], log10)
+for (i in colnames(ck[18:50])){
+  var_name_ticked<-paste0("`", i, "`")
+  print(ggplot(ck, aes_string("Day", var_name_ticked)) +
+    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+```
+
+
+# PCA Citos norm
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+cknormpca1<-cknorm[!cknorm$Day=="D90",]
+cknormpca<-cknormpca1[17:49]
+cknormpca<-cbind(cknormpca1$Label,cknormpca)
+M <- log2(cknormpca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(cknormpca$`cknormpca1$Label`, pcaResults$x[,1:2])
+library(ggplot2)
+lab<-cknormpca1$Volunteer
+lab<-cknormpca1$Group
+lab<-cknormpca1$Phase
+lab<-cknormpca1$Route
+lab<-cknormpca1$Malaria
+lab<-cknormpca1$sex
+lab<-cknormpca1$responder_code
+lab<-cknormpca1$Day
+
+```
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-cknormpca1$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-cknormpca1$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-cknormpca1$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+```
+
+
+# Citos normalized differences parasitemia/not parasitemia
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+cknorm$Day<-ifelse(cknorm$Day=="D21"|cknorm$Day=="M0", "D21/M0", cknorm$Day)
+cknorm$Day<-ifelse(cknorm$Day=="D22"|cknorm$Day=="M1", "D22/M1", cknorm$Day)
+cknorm$Day<-ifelse(cknorm$Day=="D23"|cknorm$Day=="M2", "D23/M2", cknorm$Day)
+cknorm[17:49]<-sapply(cknorm[17:49], log10)
+for (i in colnames(cknorm[17:49])){
+  var_name_ticknormed<-paste0("`", i, "`")
+  print(ggplot(cknorm, aes_string("Day", var_name_ticknormed)) +
+    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+```

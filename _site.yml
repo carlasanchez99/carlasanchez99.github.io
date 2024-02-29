@@ -1,0 +1,31 @@
+name: "BACHMI"
+output_dir: "."
+navbar:
+  title: "BACHMI analysis"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Parasitemia vs no parasitemia differences"
+      href: bachmi_descriptiva.html
+    - text: "Gender differences"
+      href: bachmi_gender.html
+    - text: "Boxplots clinical high vs low"
+      href: Boxplots_clinicak.html
+    - text: "High vs low responders"
+      href: bachmi_responders.html
+    - text: "DIABLO DEG & datasets M0 vs D-1"
+      href: bachmi_DIABLO_M0vsD-1.html
+    - text: "DIABLO BTMs & datasets M0 vs D-1"
+      href: bachmi_DIABLO_M0vsD-1-GENESETS.html
+    - text: "DIABLO DEG M0 (high vs low resp) & DATASETS M0"
+      href: DIABLO_genesM0highvslow_datasetsM0.html
+    - text: "DIABLO BTMs M0 (high vs low resp) & DATASETS M0"
+      href: bachmi_DIABLO_M0highvslowcontram0-GENESETS.html
+    - text: "DIABLO DEG M0 (high vs low resp) & DATASETS D-1"
+      href: bachmi_DIABLO_M0highvslowcontraD-1.html
+    - text: "DIABLO BTMs M0 (high vs low resp) & DATASETS D-1"
+      href: bachmi_DIABLO_M0highvslowcontraD-1-GENESETS.html
+      
+output: 
+  html_document:
+    self_contained: no  
