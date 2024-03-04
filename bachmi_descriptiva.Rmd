@@ -2,37 +2,54 @@
 title: "BACHMI_descriptiva"
 output:
   html_document:
-    df_print: paged
+    toc: true
+    theme: united
+    toc_float: true
+
 date: "2023-06-30"
 ---
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
 library(knitr)
 library(dplyr)
+library(tidyr)
+library(ggpubr)
+library(ggbeeswarm)
+library(rstatix)
+library(ggplot2)
+library(gridExtra)
+library(RColorBrewer)
+library(pheatmap)
 gem.cli.df <- readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/NEW_BACHMI_database_20150721_GMP_M0.xlsx")
 gem.cli.df[164,16] <- 37.7
 gem.cli.df[164,17] <- 1
 gem.cli.df[165,16] <- NA
 gem.cli.df[165,17] <- NA
 gem.cli.df[244,31] <- 0
-gem.cli.df <- gem.cli.df[,-c(21:22)]
+gem.cli.df$Malaria<-factor(gem.cli.df$Malaria, levels = c("parasitemia", "no parasitemia"))
+
+#gem.cli.df <- gem.cli.df[,-c(21:22)]
 
 #Readall database and convert variables into factors
 
 ck <- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/All CK_BACHMI01_22June_Susana_concentracions.csv", sep=";")
 ck<-ck [ , c(1:14,45,47,49,15:44,46,48,50)]
-
+ck$Malaria<-factor(ck$Malaria, levels = c("parasitemia", "no parasitemia"))
+ck$Day[37]<-"D22"
 colnames(ck)[21:50]<-c("G-CSF","GM-CSF","HGF","IFN-α","IFN-γ","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1α","MIP-1β","RANTES","TNF-α","VEGF","IL-17","IL-1β","IL-7","CXCL13","IL-21","TGF-β")
 
 cknorm<- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/ck_bachmi_susana_normalitzat_.csv", sep=";")
-
 colnames(cknorm)[20:49]<-c("G-CSF","GM-CSF","HGF","IFN-α","IFN-γ","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1α","MIP-1β","RANTES","TNF-α","VEGF","IL-17","IL-1β","IL-7","TGF-β","CXCL13","IL-21")
+cknorm$Malaria<-factor(cknorm$Malaria, levels = c("parasitemia", "no parasitemia"))
 
 dc<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/BACHMI DC ALL 22June2015_Susana_frequencies.xlsx")
+dc$Malaria<-factor(dc$Malaria, levels = c("parasitemia", "no parasitemia"))
 
 igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
+igm$Malaria<-factor(igm$Malaria, levels = c("parasitemia", "no parasitemia"))
 
 igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+igg$Malaria<-factor(igg$Malaria, levels = c("parasitemia", "no parasitemia"))
 
 #TAULA DESCRIPTIVA
 gem.cli.df.un<-gem.cli.df %>% distinct(Volunteer, .keep_all=TRUE)
@@ -41,15 +58,207 @@ kable(gem.cli.df.un[,-4])
 
 table(gem.cli.df.un$Route, gem.cli.df.un$sex)
 table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
-table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
+colnames(gem.cli.df)[15]<-as.character("Time_to_qPCRpos")
+colnames(gem.cli.df)[14]<-"Pre_patent_period"
+gem.cli.df$Group<-as.factor(gem.cli.df$Group)
+```
+
+## Correlation between Time to qPCR+ and Pre patent period.
+
+Dels 25 participants que teneN parasitemia només hi ha aquesta info de 22 (falten BA01018, BA01021, BA01052). Sex: 15 females i 7 males. Responders: 14 high, 8 low.
+
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide', fig.asp = 0.6, fig.width = 12}
+gem.cli.df2<-gem.cli.df
+grid.arrange(ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos",ylab="Time to qPCR+", xlab="Pre patent period",
+ palette = "jco",  add = "reg.line", conf.int = TRUE) + stat_cor()
+, ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos", ylab="Time to qPCR+", xlab="Pre patent period",
+   color = "responder", palette = "jco",
+   add = "reg.line", conf.int = TRUE) + stat_cor(aes(color = responder))
+,ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos",ylab="Time to qPCR+", xlab="Pre patent period",
+   color = "Group", palette = "jco",
+   add = "reg.line") + stat_cor(aes(color = Group))
+,ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos", ylab="Time to qPCR+", xlab="Pre patent period",
+   color = "Route", palette = "jco",
+   add = "reg.line")+ stat_cor(aes(color = Route))
+
+,ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos", ylab="Time to qPCR+", xlab="Pre patent period",
+   color = "Phase", palette = "jco",
+   add = "reg.line") + stat_cor(aes(color = Phase))
+,ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "Time_to_qPCRpos",ylab="Time to qPCR+", xlab="Pre patent period",
+   color = "sex", palette = "jco",
+   add = "reg.line") + stat_cor(aes(color = sex)), nrow=2, ncol=3)
+
+```
+
+
+## Correlation between TBS density and Pre patent period.
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide', fig.asp = 0.6, fig.width = 12}
+
+ggscatter(gem.cli.df2, x = "Pre_patent_period", y = "TBS density", ylab="TBS density", xlab="Pre patent period",
+          color = "responder", palette = "jco",
+          add = "reg.line", conf.int = TRUE) + stat_cor(aes(color = responder))
+
+```
+
+
+## Association between TBS density and high or low responder.
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide', fig.asp = 0.6, fig.width = 12}
+gem.cli.dfresp<-gem.cli.df[gem.cli.df$Day=="M0",]
+gem.cli.dfresp<-gem.cli.dfresp[!is.na(gem.cli.dfresp$responder),]
+colnames(gem.cli.dfresp)[13]<-"TBS_density"
+ggplot(gem.cli.dfresp, aes(x=responder, y= TBS_density)) +
+  geom_boxplot(position=position_dodge(0.8), alpha=0.6,outlier.size=0.3, aes(color = responder))+
+  geom_point(position=position_jitterdodge(jitter.width = 0.25), aes(color = responder)) +
+  scale_colour_manual(values=c("darkgreen", "#B2DF8A"))+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+              legend.position = "bottom", legend.direction = "horizontal") 
+
 ```
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
-table(gem.cli.df.un$responder_code, gem.cli.df.un$sex)
-gem.cli.df.un%>%group_by(responder)
+
+wilcox.test(gem.cli.dfresp$TBS_density~ gem.cli.dfresp$responder)
 ```
 
-# PCA DC
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+hemo<- gem.cli.df[,c(20:25)]
+hemopca<-cbind(gem.cli.df$Label,hemo)
+hemopca<-na.omit(hemopca)
+M <- log2(hemopca[-1] + 1)
+pcaResults <- prcomp(M)
+pcplot<-data.frame(hemopca$`gem.cli.df$Label` , pcaResults$x[,1:2])
+Original_id<-hemopca$`gem.cli.df$Label`
+hemoclin<-gem.cli.df%>%filter(Label%in%hemopca$`gem.cli.df$Label`)
+
+```
+
+# Hematological data 
+
+## PCA hemo
+
+Volunteer
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+lab<-hemoclin$Volunteer
+qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
+lab<-hemoclin$Day
+
+Day<-as.factor(lab)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+
+Malaria<-hemoclin$Malaria
+qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+```
+
+
+## Differences hemo parasitemia/not parasitemia
+
+Timepoints and data:
+
+-D-1: 24 (2 no parasitemia, 22 parasitemia)
+-D01: 0
+-D07: 0
+-D21/M0: 2 no parasitemia, 22 parasitemia
+-D22/M1: 0 no parasitemia, 2 parasitemia
+-D23/M2: 0 no parasitemia, 18 parasitemia
+-D35: 24 (2 no parasitemia, 22 parasitemia)
+-D90: 24
+
+#P-values adjusted by FDR (all cell_populations at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D21"|gem.cli.df$Day=="M0", "D21/M0", gem.cli.df$Day)
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D22"|gem.cli.df$Day=="M1", "D22/M1", gem.cli.df$Day)
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D23"|gem.cli.df$Day=="M2", "D23/M2", gem.cli.df$Day)
+ hemo2<-gem.cli.df %>%
+  pivot_longer(
+    cols = Hemoglobin:platelet,
+    names_to = 'type',
+    values_to = 'counts')
+hemo2<-hemo2[!hemo2$Day=="D01"& !hemo2$Day=="D07"& !hemo2$Day=="D22/M1"&!hemo2$Day=="D23/M2",]
+dfsignificance<-c()
+for (j in unique(hemo2$Day)){
+  hemo3<-hemo2[hemo2$Day==j,]
+  sigcytoc1<-c()
+  pvalue<-c()
+  type<-unique(hemo3$type)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      hemonew3<-hemo3[hemo3$type==i,]
+      comparison<-hemonew3$Malaria
+      pshap<-shapiro.test(hemonew3$counts)$p.value
+      if (pshap <0.05){
+          wilc<-wilcox.test(hemonew3$counts ~ comparison)$p.value
+          pvals<-c(pvals, wilc)
+          #wilc<-p.adjust(wilc)
+          if (wilc< 0.05){
+              sigcytoc1<-c(i,wilc,sigcytoc1)
+          }
+      }
+      else{
+          variance<-var.test(hemonew3$counts ~ comparison)$p.value 
+          if (variance< 0.05){
+              ttest<-t.test(hemonew3$counts ~ comparison, var.equal=FALSE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)
+              
+          }
+          else{
+              ttest<-t.test(hemonew3$counts ~ comparison, var.equal=TRUE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)     
+          }
+          if (ttest< 0.05){
+              sigcytoc1<-c(i,ttest,sigcytoc1)
+              pvalue<-c(ttest,pvalue)}
+      }}
+  padj<-p.adjust(pvals,method = "fdr")
+dfsignificance<-rbind(dfsignificance,data.frame(Day=j, type=type, padj=padj))
+}
+dfsignificance<-arrange(dfsignificance,Day,type)
+
+stat.test2 <- hemo2%>%
+  group_by(type, Day) %>%
+  t_test(counts ~ Malaria) %>%
+  adjust_pvalue() 
+stat.test2<-arrange(stat.test2,Day,type)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+gem.cli.df<-gem.cli.df[!gem.cli.df$Day=="D01"& !gem.cli.df$Day=="D07",]
+pd = position_jitterdodge(dodge.width = 0.75, jitter.width = 0.3)
+
+for (i in colnames(gem.cli.df[20:25])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(gem.cli.df, aes_string("Day", var_name_ticked)) +
+          geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA, alpha=0.6) +   geom_point(aes(color = Malaria),position = pd)+  ylab(paste(i, "Counts"))
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$type==i,], label = "p.adj.signif", hide.ns = TRUE, y.position = max((na.omit(hemo2$counts[hemo2$type==i])))+3) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))))
+ } 
+
+```
+
+# Subpopulations dc
+
+## PCA DC
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 dcpca<-dc[13:24]
@@ -61,7 +270,6 @@ M <- log2(dcpca[-1] + 1)
 pcaResults <- prcomp(M)
 pcplot<-data.frame(dcpca$`dc$Label` , pcaResults$x[,1:2])
 Original_id<-dcpca$`dc$Label`
-library(ggplot2)
 dcclin<-dc%>%filter(Label%in%dcpca$`dc$Label`)
 lab<-dcclin$Volunteer
 lab<-dcclin$Group
@@ -92,30 +300,116 @@ qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
 
 ```
 
-# Differences DC parasitemia/not parasitemia
+## Differences DC parasitemia/not parasitemia
 
+Timepoints and data:
+
+-D-1: 36 (11 no parasitemia, 25 parasitemia)
+-D01: 36
+-D07: 36
+-D21/M0: 36 
+-D22/M1: 35 (11 no parasitemia, 24 parasitemia)
+-D23/M2: 36 
+-D35: 36 
+-D90: 36
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-
-dc$Day<-ifelse(dc$Day=="D21"|dc$Day=="M0", "D21/M0", dc$Day)
-dc$Day<-ifelse(dc$Day=="D22"|dc$Day=="M1", "D22/M1", dc$Day)
-dc$Day<-ifelse(dc$Day=="D23"|dc$Day=="M2", "D23/M2", dc$Day)
-for (i in colnames(dc[13:24])){
-  var_name_ticked<-paste0("`", i, "`")
-  print(ggplot(dc, aes_string("Day", var_name_ticked)) +
-    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+# 
+ dc$Day<-ifelse(dc$Day=="D21"|dc$Day=="M0", "D21/M0", dc$Day)
+ dc$Day<-ifelse(dc$Day=="D22"|dc$Day=="M1", "D22/M1", dc$Day)
+ dc$Day<-ifelse(dc$Day=="D23"|dc$Day=="M2", "D23/M2", dc$Day)
+# for (i in colnames(dc[13:24])){
+#   var_name_ticked<-paste0("`", i, "`")
+#   print(ggplot(dc, aes_string("Day", var_name_ticked)) +
+#     geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
 ```
 
 
-# PCA IgG
+#P-values adjusted by FDR (all cell_populations at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+dc2<-dc %>%
+  pivot_longer(
+    cols = Lymphos:"immature DC",
+    names_to = 'cell_population',
+    values_to = 'freq')
+
+dfsignificance<-c()
+for (j in unique(dc2$Day)){
+  dc3<-dc2[dc2$Day==j,]
+  sigcytoc1<-c()
+  pvalue<-c()
+  cells<-unique(dc3$cell_population)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in cells){
+      dcnew3<-dc3[dc3$cell_population==i,]
+      comparison<-dcnew3$Malaria
+      pshap<-shapiro.test(dcnew3$freq)$p.value
+      if (pshap <0.05){
+          wilc<-wilcox.test(dcnew3$freq ~ comparison)$p.value
+          pvals<-c(pvals, wilc)
+          #wilc<-p.adjust(wilc)
+          if (wilc< 0.05){
+              sigcytoc1<-c(i,wilc,sigcytoc1)
+          }
+      }
+      else{
+          variance<-var.test(dcnew3$freq ~ comparison)$p.value 
+          if (variance< 0.05){
+              ttest<-t.test(dcnew3$freq ~ comparison, var.equal=FALSE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)
+              
+          }
+          else{
+              ttest<-t.test(dcnew3$freq ~ comparison, var.equal=TRUE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)     
+          }
+          if (ttest< 0.05){
+              sigcytoc1<-c(i,ttest,sigcytoc1)
+              pvalue<-c(ttest,pvalue)}
+      }}
+  padj<-p.adjust(pvals,method = "fdr")
+dfsignificance<-rbind(dfsignificance,data.frame(Day=j, cells=cells, padj=padj))
+}
+dfsignificance<-arrange(dfsignificance,Day,cells)
+
+stat.test2 <- dc2%>%
+  group_by(cell_population, Day) %>%
+  t_test(freq ~ Malaria) %>%
+  adjust_pvalue() 
+stat.test2<-arrange(stat.test2,Day,cell_population)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+for (i in colnames(dc[13:24])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(dc, aes_string("Day", var_name_ticked)) +
+          geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA, alpha=0.6)+     geom_point(aes(color = Malaria),position = pd)+ ylab(paste("Frequency ",i, "(%))"))
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$cell_population==i,], label = "p.adj.signif", hide.ns = TRUE, y.position = max((na.omit(dc2$freq[dc2$cell_population==i])))+3) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))))
+ } 
+
+
+```
+
+# IgG & IgM
+
+## PCA IgG
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 iggpca<-igg[16:36]
 iggpca<-cbind(igg$Label,iggpca)
 M <- log2(iggpca[-1] + 1)
 pcaResults <- prcomp(M)
 pcplot<-data.frame(iggpca$`igg$Label`, pcaResults$x[,1:2])
-library(ggplot2)
 iggclin<-igg%>%filter(Label%in%iggpca$`igg$Label`)
 lab<-iggclin$Volunteer
 lab<-iggclin$Group
@@ -125,8 +419,6 @@ lab<-iggclin$Malaria
 lab<-iggclin$sex
 lab<-iggclin$responder_code
 lab<-iggclin$Day
-
-
 ```
 
 Volunteer
@@ -146,31 +438,14 @@ qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
 
 ```
 
-# Differences IgG parasitemia/not parasitemia
-
-
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
-
-igg$Day<-ifelse(igg$Day=="D21"|igg$Day=="M0", "D21/M0", igg$Day)
-igg$Day<-ifelse(igg$Day=="D22"|igg$Day=="M1", "D22/M1", igg$Day)
-igg$Day<-ifelse(igg$Day=="D23"|igg$Day=="M2", "D23/M2", igg$Day)
-igg[16:36]<-sapply(igg[16:36], log10)
-for (i in colnames(igg[16:36])){
-  var_name_ticked<-paste0("`", i, "`")
-  print(ggplot(igg, aes_string("Day", var_name_ticked)) +
-    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
-```
-
-# PCA IgM
+## PCA IgM
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
 igmpca<-igm[15:36]
 igmpca<-cbind(igm$Label,igmpca)
 M <- log2(igmpca[-1] + 1)
 pcaResults <- prcomp(M)
 pcplot<-data.frame(igmpca$`igm$Label`, pcaResults$x[,1:2])
-library(ggplot2)
 igmclin<-igm%>%filter(Label%in%igmpca$`igm$Label`)
 lab<-igmclin$Volunteer
 lab<-igmclin$Group
@@ -201,76 +476,327 @@ qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
 ```
 
 
-# Differences IgM parasitemia/not parasitemia
+## Differences IgG & IgM parasitemia/not parasitemia
 
+
+All timepoints 36 participants. 
+
+P-values adjusted by FDR (all antibodies at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
+
+igm[15:36]<-sapply(igm[15:36], log10)
 igm$Day<-ifelse(igm$Day=="D21"|igm$Day=="M0", "D21/M0", igm$Day)
 igm$Day<-ifelse(igm$Day=="D22"|igm$Day=="M1", "D22/M1", igm$Day)
 igm$Day<-ifelse(igm$Day=="D23"|igm$Day=="M2", "D23/M2", igm$Day)
-igm[15:36]<-sapply(igm[15:36], log10)
+colnames(igm)[15:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4",
+"PfRH5","MSP-1 19","BSA","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2",
+"DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igm2<-igm %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+
+igm2$fullname<-paste(igm2$Ig, igm2$antigen, sep="_")
+
+
+igg[16:36]<-sapply(igg[16:36], log10)
+igg$Day<-ifelse(igg$Day=="D21"|igg$Day=="M0", "D21/M0", igg$Day)
+igg$Day<-ifelse(igg$Day=="D22"|igg$Day=="M1", "D22/M1", igg$Day)
+igg$Day<-ifelse(igg$Day=="D23"|igg$Day=="M2", "D23/M2", igg$Day)
+colnames(igg)[16:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4",
+"PfRH5","MSP-1 19","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2","DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igg2<-igg %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+igg2$fullname<-paste(igg2$Ig, igg2$antigen, sep="_")
+igg2<-igg2[,-15]
+ig2<-rbind(igm2, igg2)
+dfsignificance<-c()
+for (j in unique(ig2$Day)){
+  ig3<-ig2[ig2$Day==j,]
+  sigcytoc1<-c()
+  pvalue<-c()
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in unique(ig3$fullname)){
+      ignew3<-ig3[ig3$fullname==i,]
+      comparison<-ignew3$Malaria
+      pshap<-shapiro.test(ignew3$log10_conc)$p.value
+      if (pshap <0.05){
+          wilc<-wilcox.test(ignew3$log10_conc ~ comparison)$p.value
+          pvals<-c(pvals, wilc)
+          #wilc<-p.adjust(wilc)
+          if (wilc< 0.05){
+              sigcytoc1<-c(i,wilc,sigcytoc1)
+          }
+      }
+      else{
+          variance<-var.test(ignew3$log10_conc ~ comparison)$p.value 
+          if (variance< 0.05){
+              ttest<-t.test(ignew3$log10_conc ~ comparison, var.equal=FALSE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)
+          }
+          else{
+              ttest<-t.test(ignew3$log10_conc ~ comparison, var.equal=TRUE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)     
+          }
+          if (ttest< 0.05){
+              sigcytoc1<-c(i,ttest,sigcytoc1)
+              pvalue<-c(ttest,pvalue)}
+      }}
+  padj<-p.adjust(pvals,method = "fdr")
+dfsignificance<-rbind(dfsignificance,data.frame(Day=j, fullname=unique(ig3$fullname), padj=padj))
+}
+dfsignificance<-arrange(dfsignificance,Day,fullname)
+
+stat.test2 <- ig2%>%
+  group_by(fullname, Day) %>%
+  t_test(log10_conc ~ Malaria) %>%
+  adjust_pvalue() 
+stat.test2<-arrange(stat.test2,Day,fullname)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+pd = position_jitterdodge(dodge.width = 0.75, jitter.width = 0.3)
+
+colnames(igg)[16:36]<-paste("IgG",colnames(igg)[16:36], sep="_")
+for (i in colnames(igg[16:36])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(igg, aes_string("Day", var_name_ticked)) +
+          geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA, alpha=0.6)+     geom_point(aes(color = Malaria),position = pd)+ylab(paste("log10(",i, ")"))
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$fullname==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(ig2$log10_conc[ig2$fullname==i])))+1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))))
+} 
+
+colnames(igm)[15:36]<-paste("IgM",colnames(igm)[15:36], sep="_")
 for (i in colnames(igm[15:36])){
   var_name_ticked<-paste0("`", i, "`")
-  print(ggplot(igm, aes_string("Day", var_name_ticked)) +
-    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+  grafic<-ggplot(igm, aes_string("Day", var_name_ticked)) +
+          geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA, alpha=0.6)+geom_point(aes(color = Malaria),position = pd)+ ylab(paste("log10(",i, ")"))
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$fullname==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(ig2$log10_conc[ig2$fullname==i])))+1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))))
+} 
 ```
 
 
-# PCA Citos nonorm
+# Heatmap IgG parasitemia/not parasitemia
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
-ckpca1<-ck[!ck$Day=="D90",]
-ckpca<-ckpca1[18:50]
-ckpca<-cbind(ckpca1$Label,ckpca)
-M <- log2(ckpca[-1] + 1)
-pcaResults <- prcomp(M)
-pcplot<-data.frame(ckpca$`ckpca1$Label`, pcaResults$x[,1:2])
-library(ggplot2)
-lab<-ckpca1$Volunteer
-lab<-ckpca1$Group
-lab<-ckpca1$Phase
-lab<-ckpca1$Route
-lab<-ckpca1$Malaria
-lab<-ckpca1$sex
-lab<-ckpca1$responder_code
-lab<-ckpca1$Day
 
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%", fig.height=15, fig.width=12}
+igp<-as.matrix(igg[16:36])
+
+annotation_row<-data.frame(igg$Volunteer, igg$sex, igg$Day)
+colnames(annotation_row)<-c("Volunteeer", "Sex", "Day")
+
+rownames(annotation_row)<-igg$Label
+rownames(igp)<-rownames(annotation_row)
+annotation_colors = list(Sex = c("Male"="#F8766D", "Female"="#00BFC4"), Volunteer=c( colorRampPalette(brewer.pal(8, "Set2"))(36)), colorRampPalette(brewer.pal(8, "Set1"))(8))
+ names(annotation_colors[[2]])<-unique(igg$Volunteer)
+ names(annotation_colors[[3]])<-c("D-1","D01","D07", "M0","M1","M2", "D35","D90")
+
+pheatmap(igp,  show_rownames = FALSE, fontsize = 16, annotation_row=annotation_row, annotation_colors = annotation_colors, annotation_names_col = FALSE)
+```
+# Heatmap IgM parasitemia/not parasitemia
+
+
+\renewcommand{\arraystretch}{0.85}
+```{r, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%", fig.height=15, fig.width=12}
+igm<-igm[-23]
+
+imp<-as.matrix(igm[15:35])
+
+annotation_row<-data.frame(igm$Volunteer,igm$sex, igm$Day)
+colnames(annotation_row)<-c("Volunteeer","Sex","Day")
+
+rownames(annotation_row)<-igm$Label
+rownames(imp)<-rownames(annotation_row)
+
+annotation_colors = list(Sex = c("Male"="#F8766D", "Female"="#00BFC4"), Volunteer=c( colorRampPalette(brewer.pal(8, "Set2"))(36)), colorRampPalette(brewer.pal(8, "Set1"))(8))
+ names(annotation_colors[[2]])<-unique(igm$Volunteer)
+ names(annotation_colors[[3]])<-c(unique(igm$Day))
+pheatmap(imp, show_rownames = FALSE, fontsize = 16, annotation_row=annotation_row, annotation_colors = annotation_colors, annotation_names_col = FALSE)
 ```
 
-Volunteer
+<!-- # PCA Citos nonorm -->
+
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- ckpca1<-ck[!ck$Day=="D90",] -->
+<!-- ckpca<-ckpca1[18:50] -->
+<!-- ckpca<-cbind(ckpca1$Label,ckpca) -->
+<!-- M <- log2(ckpca[-1] + 1) -->
+<!-- pcaResults <- prcomp(M) -->
+<!-- pcplot<-data.frame(ckpca$`ckpca1$Label`, pcaResults$x[,1:2]) -->
+<!-- lab<-ckpca1$Volunteer -->
+<!-- lab<-ckpca1$Group -->
+<!-- lab<-ckpca1$Phase -->
+<!-- lab<-ckpca1$Route -->
+<!-- lab<-ckpca1$Malaria -->
+<!-- lab<-ckpca1$sex -->
+<!-- lab<-ckpca1$responder_code -->
+<!-- lab<-ckpca1$Day -->
+
+<!-- ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day) -->
+<!-- ``` -->
+
+<!-- Volunteer -->
 
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
 
-lab<-ckpca1$Volunteer
-qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none")
-lab<-ckpca1$Day
+<!-- lab<-ckpca1$Volunteer -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none") -->
+<!-- lab<-ckpca1$Day -->
 
-Day<-as.factor(lab)
-qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
+<!-- Day<-as.factor(lab) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Day) -->
 
-Malaria<-ckpca1$Malaria
-qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
+<!-- Malaria<-ckpca1$Malaria -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria) -->
 
-```
-
-# Citos not normalized differences parasitemia/not parasitemia
-
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
-
-ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day)
-ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day)
-ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day)
-ck[18:50]<-sapply(ck[18:50], log10)
-for (i in colnames(ck[18:50])){
-  var_name_ticked<-paste0("`", i, "`")
-  print(ggplot(ck, aes_string("Day", var_name_ticked)) +
-    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
-```
+<!-- ``` -->
+<!-- # PCA Citos nonorm Plate (Luminex, CXCL13, IL21 i TGFB) -->
 
 
-# PCA Citos norm
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+
+<!-- Plate.Luminex<-as.factor(ckpca1$Plate.Luminex) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.Luminex) -->
+
+
+<!-- Plate.CXCL13<-as.factor(ckpca1$plate_CXCL13) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.CXCL13) -->
+
+
+<!-- Plate.IL21<-as.factor(ckpca1$plate_IL21) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.IL21) -->
+
+
+<!-- Plate.TGFb<-as.factor(ckpca1$plate_TGFb) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.TGFb) -->
+
+<!-- ``` -->
+
+<!-- # Citos not normalized differences parasitemia/not parasitemia -->
+
+
+<!-- Timepoints and data: -->
+
+<!-- -D-1: 36 (11 no parasitemia, 25 parasitemia) -->
+<!-- -D01: 36 -->
+<!-- -D07: 36 -->
+<!-- -D21/M0: 36  -->
+<!-- -D22/M1: 36  -->
+<!-- -D23/M2: 36  -->
+<!-- -D35: 36  -->
+<!-- -D90: 0 -->
+
+<!-- #P-values adjusted by FDR (all analytes at each timepoint).  -->
+<!--  \*:p.adj < 0.05 -->
+<!--  \*\*: p.adj < 0.01 -->
+<!--  \*\*\*: p.adj < 0.001,  -->
+<!--  \*\*\*\*: p.adj < 0.0001.  -->
+
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- #  -->
+<!-- # ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day) -->
+<!-- # ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day) -->
+<!-- # ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day) -->
+<!-- # ck[18:50]<-sapply(ck[18:50], log10) -->
+<!-- # for (i in colnames(ck[18:50])){ -->
+<!-- #   var_name_ticked<-paste0("`", i, "`") -->
+<!-- #   print(ggplot(ck, aes_string("Day", var_name_ticked)) + -->
+<!-- #     geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) }  -->
+
+
+<!-- ck<- ck[c(colnames(ck[1:17]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")] -->
+<!-- ck[18:50]<-sapply(ck[18:50], log10) -->
+<!-- ck2<-ck %>% -->
+<!--   pivot_longer( -->
+<!--     cols = EGF:CXCL13, -->
+<!--     names_to = 'analyte', -->
+<!--     values_to = 'log10_mfi') -->
+<!-- ck2$analyte<- factor(ck2$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")) -->
+
+<!-- ck2<-ck2[!ck2$Day=="D90",] -->
+<!-- ck2<-ck2[!ck2$analyte=="IL-17",] -->
+
+<!-- cyto_names<-unique(ck2$analyte) -->
+<!-- dfsignificance<-c() -->
+<!-- for (j in unique(ck2$Day)){ -->
+<!--   ck3<-ck2[ck2$Day==j,] -->
+<!--   sigcytoc1<-c() -->
+<!--   pvalue<-c() -->
+<!--   pvals<-c() -->
+<!--   for(i in cyto_names){ -->
+<!--       cknew3<-ck3[ck3$analyte==i,] -->
+<!--       comparison<-cknew3$Malaria -->
+<!--       pshap<-shapiro.test(cknew3$log10_mfi)$p.value -->
+<!--       if (pshap <0.05){ -->
+<!--           wilc<-wilcox.test(cknew3$log10_mfi ~ comparison)$p.value -->
+<!--           pvals<-c(pvals, wilc) -->
+<!--           #wilc<-p.adjust(wilc) -->
+<!--           if (wilc< 0.05){ -->
+<!--               sigcytoc1<-c(i,wilc,sigcytoc1) -->
+<!--           } -->
+<!--       } -->
+<!--       else{ -->
+<!--           variance<-var.test(cknew3$log10_mfi ~ comparison)$p.value  -->
+<!--           if (variance< 0.05){ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=FALSE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest) -->
+
+<!--           } -->
+<!--           else{ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=TRUE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest)      -->
+<!--           } -->
+<!--           if (ttest< 0.05){ -->
+<!--               sigcytoc1<-c(i,ttest,sigcytoc1) -->
+<!--               pvalue<-c(ttest,pvalue)} -->
+<!--       }} -->
+<!--   padj<-p.adjust(pvals,method = "fdr") -->
+<!-- dfsignificance<-rbind(dfsignificance,data.frame(Day=j, analyte=unique(cyto_names), padj=padj)) -->
+<!-- } -->
+<!-- dfsignificance<-arrange(dfsignificance,Day,analyte) -->
+
+<!-- stat.test2 <- ck2%>% -->
+<!--   group_by(analyte, Day) %>% -->
+<!--   t_test(log10_mfi ~ Malaria) %>% -->
+<!--   adjust_pvalue()   -->
+<!-- stat.test2<-arrange(stat.test2,Day,analyte) -->
+<!-- stat.test2$p.adj<-dfsignificance$padj -->
+<!-- stat.test2<-stat.test2%>% -->
+<!--   add_significance("p.adj")  -->
+
+<!-- stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y")) -->
+
+
+<!-- for (i in colnames(ck[18:50])[-24]){ -->
+<!--   var_name_ticked<-paste0("`", i, "`") -->
+<!--   grafic<-ggplot(ck, aes_string("Day", var_name_ticked)) + -->
+<!--           geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA) +     geom_point(aes(color = Malaria),position = pd) -->
+<!--   print(grafic+stat_pvalue_manual(stat.test2[stat.test2$analyte==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(ck2$log10_mfi[ck2$analyte==i])))+0.1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15)))) -->
+<!-- }  -->
+<!-- ``` -->
+
+# Cytokines
+
+## PCA Citos norm
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
@@ -280,7 +806,6 @@ cknormpca<-cbind(cknormpca1$Label,cknormpca)
 M <- log2(cknormpca[-1] + 1)
 pcaResults <- prcomp(M)
 pcplot<-data.frame(cknormpca$`cknormpca1$Label`, pcaResults$x[,1:2])
-library(ggplot2)
 lab<-cknormpca1$Volunteer
 lab<-cknormpca1$Group
 lab<-cknormpca1$Phase
@@ -307,18 +832,133 @@ qplot(x=PC1, y=PC2, data=pcplot, colour=Day)
 Malaria<-cknormpca1$Malaria
 qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria)
 ```
+## PCA Citos norm Plate (Luminex, CXCL13, IL21 i TGFB)
 
-
-# Citos normalized differences parasitemia/not parasitemia
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
+Plate.Luminex<-as.factor(cknormpca1$plate.Luminex)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.Luminex)
+
+
+Plate.CXCL13<-as.factor(cknormpca1$plate_CXCL13)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.CXCL13)
+
+
+Plate.IL21<-as.factor(cknormpca1$plate_IL21)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.IL21)
+
+
+Plate.TGFb<-as.factor(cknormpca1$plate_TGFb)
+qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.TGFb)
+
+```
+
+## Citos normalized differences parasitemia/not parasitemia
+
+
+Timepoints and data:
+
+-D-1: 36 (11 no parasitemia, 25 parasitemia)
+-D01: 36
+-D07: 36
+-D21/M0: 36 
+-D22/M1: 36 
+-D23/M2: 36 
+-D35: 36 
+-D90: 0
+
+#P-values adjusted by FDR (all analytes at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# 
+# cknorm$Day<-ifelse(cknorm$Day=="D21"|cknorm$Day=="M0", "D21/M0", cknorm$Day)
+# cknorm$Day<-ifelse(cknorm$Day=="D22"|cknorm$Day=="M1", "D22/M1", cknorm$Day)
+# cknorm$Day<-ifelse(cknorm$Day=="D23"|cknorm$Day=="M2", "D23/M2", cknorm$Day)
+# cknorm[17:49]<-sapply(cknorm[17:49], log10)
+# for (i in colnames(cknorm[17:49])){
+#   var_name_ticknormed<-paste0("`", i, "`")
+#   print(ggplot(cknorm, aes_string("Day", var_name_ticknormed)) +
+#     geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+
+cknorm<- cknorm[c(colnames(cknorm[1:16]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")]
 cknorm$Day<-ifelse(cknorm$Day=="D21"|cknorm$Day=="M0", "D21/M0", cknorm$Day)
 cknorm$Day<-ifelse(cknorm$Day=="D22"|cknorm$Day=="M1", "D22/M1", cknorm$Day)
 cknorm$Day<-ifelse(cknorm$Day=="D23"|cknorm$Day=="M2", "D23/M2", cknorm$Day)
 cknorm[17:49]<-sapply(cknorm[17:49], log10)
-for (i in colnames(cknorm[17:49])){
+cknorm2<-cknorm %>%
+  pivot_longer(
+    cols = EGF:CXCL13,
+    names_to = 'analyte',
+    values_to = 'log10_mfi')
+cknorm2$analyte<- factor(cknorm2$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13"))
+
+cknorm2<-cknorm2[!cknorm2$Day=="D90",]
+cknorm2<-cknorm2[!cknorm2$analyte=="IL-17",]
+
+cyto_names<-unique(cknorm2$analyte)
+dfsignificance<-c()
+for (j in unique(cknorm2$Day)){
+  cknorm3<-cknorm2[cknorm2$Day==j,]
+  sigcytoc1<-c()
+  pvalue<-c()
+  pvals<-c()
+  for(i in cyto_names){
+      cknormnew3<-cknorm3[cknorm3$analyte==i,]
+      comparison<-cknormnew3$Malaria
+      pshap<-shapiro.test(cknormnew3$log10_mfi)$p.value
+      if (pshap <0.05){
+          wilc<-wilcox.test(cknormnew3$log10_mfi ~ comparison)$p.value
+          pvals<-c(pvals, wilc)
+          #wilc<-p.adjust(wilc)
+          if (wilc< 0.05){
+              sigcytoc1<-c(i,wilc,sigcytoc1)
+          }
+      }
+      else{
+          variance<-var.test(cknormnew3$log10_mfi ~ comparison)$p.value 
+          if (variance< 0.05){
+              ttest<-t.test(cknormnew3$log10_mfi ~ comparison, var.equal=FALSE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)
+              
+          }
+          else{
+              ttest<-t.test(cknormnew3$log10_mfi ~ comparison, var.equal=TRUE)$p.value
+              #ttest<-p.adjust(ttest)
+              pvals<-c(pvals, ttest)     
+          }
+          if (ttest< 0.05){
+              sigcytoc1<-c(i,ttest,sigcytoc1)
+              pvalue<-c(ttest,pvalue)}
+      }}
+  padj<-p.adjust(pvals,method = "fdr")
+dfsignificance<-rbind(dfsignificance,data.frame(Day=j, analyte=unique(cyto_names), padj=padj))
+}
+dfsignificance<-arrange(dfsignificance,Day,analyte)
+
+stat.test2 <- cknorm2%>%
+  group_by(analyte, Day) %>%
+  t_test(log10_mfi ~ Malaria) %>%
+  adjust_pvalue()  
+stat.test2<-arrange(stat.test2,Day,analyte)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+
+for (i in colnames(cknorm[17:49])[-24]){
   var_name_ticknormed<-paste0("`", i, "`")
-  print(ggplot(cknorm, aes_string("Day", var_name_ticknormed)) +
-    geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) } 
+  cknorm<-cknorm[!cknorm$Day=="D90",]
+  grafic<-ggplot(cknorm, aes_string("Day", var_name_ticknormed)) +
+          geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA, alpha=0.6)+     geom_point(aes(color = Malaria),position = pd) + ylab(paste("log10(",i, ")"))
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$analyte==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(cknorm2$log10_mfi[cknorm2$analyte==i])))+0.1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))))
+} 
 ```
+
+

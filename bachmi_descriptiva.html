@@ -17,7 +17,7 @@
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -30,11 +30,12 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
-<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -222,6 +223,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -229,6 +293,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -296,59 +370,250 @@ $(document).ready(function () {
 </div>
 
 
-<div id="pca-dc" class="section level1">
-<h1>PCA DC</h1>
-<p>Volunteer</p>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-4-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-4-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
+<div id="correlation-between-time-to-qpcr-and-pre-patent-period."
+class="section level2">
+<h2>Correlation between Time to qPCR+ and Pre patent period.</h2>
+<p>Dels 25 participants que teneN parasitemia només hi ha aquesta info
+de 22 (falten BA01018, BA01021, BA01052). Sex: 15 females i 7 males.
+Responders: 14 high, 8 low.</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-2-1.png" width="1152" /></p>
 </div>
-<div id="differences-dc-parasitemianot-parasitemia"
-class="section level1">
-<h1>Differences DC parasitemia/not parasitemia</h1>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-5-12.png" width="672" /></p>
+<div id="correlation-between-tbs-density-and-pre-patent-period."
+class="section level2">
+<h2>Correlation between TBS density and Pre patent period.</h2>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-3-1.png" width="1152" /></p>
 </div>
-<div id="pca-igg" class="section level1">
-<h1>PCA IgG</h1>
+<div id="association-between-tbs-density-and-high-or-low-responder."
+class="section level2">
+<h2>Association between TBS density and high or low responder.</h2>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-4-1.png" width="1152" /></p>
+</div>
+<div id="hematological-data" class="section level1">
+<h1>Hematological data</h1>
+<div id="pca-hemo" class="section level2">
+<h2>PCA hemo</h2>
 <p>Volunteer</p>
 <p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-7-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-7-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-7-3.png" width="672" /></p>
 </div>
-<div id="differences-igg-parasitemianot-parasitemia"
-class="section level1">
-<h1>Differences IgG parasitemia/not parasitemia</h1>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-21.png" width="672" /></p>
+<div id="differences-hemo-parasitemianot-parasitemia"
+class="section level2">
+<h2>Differences hemo parasitemia/not parasitemia</h2>
+<p>Timepoints and data:</p>
+<p>-D-1: 24 (2 no parasitemia, 22 parasitemia) -D01: 0 -D07: 0 -D21/M0:
+2 no parasitemia, 22 parasitemia -D22/M1: 0 no parasitemia, 2
+parasitemia -D23/M2: 0 no parasitemia, 18 parasitemia -D35: 24 (2 no
+parasitemia, 22 parasitemia) -D90: 24</p>
+<p>#P-values adjusted by FDR (all cell_populations at each timepoint).
+*:p.adj &lt; 0.05 **: p.adj &lt; 0.01 ***: p.adj &lt; 0.001, ****: p.adj
+&lt; 0.0001.</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-8-6.png" width="672" /></p>
 </div>
-<div id="pca-igm" class="section level1">
-<h1>PCA IgM</h1>
+</div>
+<div id="subpopulations-dc" class="section level1">
+<h1>Subpopulations dc</h1>
+<div id="pca-dc" class="section level2">
+<h2>PCA DC</h2>
 <p>Volunteer</p>
 <p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-10-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-10-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
 </div>
-<div id="differences-igm-parasitemianot-parasitemia"
-class="section level1">
-<h1>Differences IgM parasitemia/not parasitemia</h1>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-21.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-11-22.png" width="672" /></p>
+<div id="differences-dc-parasitemianot-parasitemia"
+class="section level2">
+<h2>Differences DC parasitemia/not parasitemia</h2>
+<p>Timepoints and data:</p>
+<p>-D-1: 36 (11 no parasitemia, 25 parasitemia) -D01: 36 -D07: 36
+-D21/M0: 36 -D22/M1: 35 (11 no parasitemia, 24 parasitemia) -D23/M2: 36
+-D35: 36 -D90: 36</p>
+<p>#P-values adjusted by FDR (all cell_populations at each timepoint).
+*:p.adj &lt; 0.05 **: p.adj &lt; 0.01 ***: p.adj &lt; 0.001, ****: p.adj
+&lt; 0.0001.</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-12-12.png" width="672" /></p>
 </div>
-<div id="pca-citos-nonorm" class="section level1">
-<h1>PCA Citos nonorm</h1>
+</div>
+<div id="igg-igm" class="section level1">
+<h1>IgG &amp; IgM</h1>
+<div id="pca-igg" class="section level2">
+<h2>PCA IgG</h2>
 <p>Volunteer</p>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-13-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-13-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-3.png" width="672" /></p>
 </div>
-<div id="citos-not-normalized-differences-parasitemianot-parasitemia"
-class="section level1">
-<h1>Citos not normalized differences parasitemia/not parasitemia</h1>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-21.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-22.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-23.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-24.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-25.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-26.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-27.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-28.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-29.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-30.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-31.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-32.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-14-33.png" width="672" /></p>
-</div>
-<div id="pca-citos-norm" class="section level1">
-<h1>PCA Citos norm</h1>
+<div id="pca-igm" class="section level2">
+<h2>PCA IgM</h2>
 <p>Volunteer</p>
 <p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-16-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-16-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-16-3.png" width="672" /></p>
 </div>
+<div id="differences-igg-igm-parasitemianot-parasitemia"
+class="section level2">
+<h2>Differences IgG &amp; IgM parasitemia/not parasitemia</h2>
+<p>All timepoints 36 participants.</p>
+<p>P-values adjusted by FDR (all antibodies at each timepoint). *:p.adj
+&lt; 0.05 **: p.adj &lt; 0.01 ***: p.adj &lt; 0.001, ****: p.adj &lt;
+0.0001.</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-21.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-22.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-23.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-24.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-25.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-26.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-27.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-28.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-29.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-30.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-31.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-32.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-33.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-34.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-35.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-36.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-37.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-38.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-39.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-40.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-41.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-42.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-43.png" width="672" /></p>
+</div>
+</div>
+<div id="heatmap-igg-parasitemianot-parasitemia" class="section level1">
+<h1>Heatmap IgG parasitemia/not parasitemia</h1>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-18-1.png" width="100%" />
+# Heatmap IgM parasitemia/not parasitemia</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-19-1.png" width="100%" /></p>
+<!-- # PCA Citos nonorm -->
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- ckpca1<-ck[!ck$Day=="D90",] -->
+<!-- ckpca<-ckpca1[18:50] -->
+<!-- ckpca<-cbind(ckpca1$Label,ckpca) -->
+<!-- M <- log2(ckpca[-1] + 1) -->
+<!-- pcaResults <- prcomp(M) -->
+<!-- pcplot<-data.frame(ckpca$`ckpca1$Label`, pcaResults$x[,1:2]) -->
+<!-- lab<-ckpca1$Volunteer -->
+<!-- lab<-ckpca1$Group -->
+<!-- lab<-ckpca1$Phase -->
+<!-- lab<-ckpca1$Route -->
+<!-- lab<-ckpca1$Malaria -->
+<!-- lab<-ckpca1$sex -->
+<!-- lab<-ckpca1$responder_code -->
+<!-- lab<-ckpca1$Day -->
+<!-- ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day) -->
+<!-- ``` -->
+<!-- Volunteer -->
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- lab<-ckpca1$Volunteer -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=lab)+ theme(legend.position = "none") -->
+<!-- lab<-ckpca1$Day -->
+<!-- Day<-as.factor(lab) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Day) -->
+<!-- Malaria<-ckpca1$Malaria -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Malaria) -->
+<!-- ``` -->
+<!-- # PCA Citos nonorm Plate (Luminex, CXCL13, IL21 i TGFB) -->
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- Plate.Luminex<-as.factor(ckpca1$Plate.Luminex) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.Luminex) -->
+<!-- Plate.CXCL13<-as.factor(ckpca1$plate_CXCL13) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.CXCL13) -->
+<!-- Plate.IL21<-as.factor(ckpca1$plate_IL21) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.IL21) -->
+<!-- Plate.TGFb<-as.factor(ckpca1$plate_TGFb) -->
+<!-- qplot(x=PC1, y=PC2, data=pcplot, colour=Plate.TGFb) -->
+<!-- ``` -->
+<!-- # Citos not normalized differences parasitemia/not parasitemia -->
+<!-- Timepoints and data: -->
+<!-- -D-1: 36 (11 no parasitemia, 25 parasitemia) -->
+<!-- -D01: 36 -->
+<!-- -D07: 36 -->
+<!-- -D21/M0: 36  -->
+<!-- -D22/M1: 36  -->
+<!-- -D23/M2: 36  -->
+<!-- -D35: 36  -->
+<!-- -D90: 0 -->
+<!-- #P-values adjusted by FDR (all analytes at each timepoint).  -->
+<!--  \*:p.adj < 0.05 -->
+<!--  \*\*: p.adj < 0.01 -->
+<!--  \*\*\*: p.adj < 0.001,  -->
+<!--  \*\*\*\*: p.adj < 0.0001.  -->
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- #  -->
+<!-- # ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day) -->
+<!-- # ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day) -->
+<!-- # ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day) -->
+<!-- # ck[18:50]<-sapply(ck[18:50], log10) -->
+<!-- # for (i in colnames(ck[18:50])){ -->
+<!-- #   var_name_ticked<-paste0("`", i, "`") -->
+<!-- #   print(ggplot(ck, aes_string("Day", var_name_ticked)) + -->
+<!-- #     geom_boxplot(position=position_dodge(1), aes(fill=Malaria))) }  -->
+<!-- ck<- ck[c(colnames(ck[1:17]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")] -->
+<!-- ck[18:50]<-sapply(ck[18:50], log10) -->
+<!-- ck2<-ck %>% -->
+<!--   pivot_longer( -->
+<!--     cols = EGF:CXCL13, -->
+<!--     names_to = 'analyte', -->
+<!--     values_to = 'log10_mfi') -->
+<!-- ck2$analyte<- factor(ck2$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")) -->
+<!-- ck2<-ck2[!ck2$Day=="D90",] -->
+<!-- ck2<-ck2[!ck2$analyte=="IL-17",] -->
+<!-- cyto_names<-unique(ck2$analyte) -->
+<!-- dfsignificance<-c() -->
+<!-- for (j in unique(ck2$Day)){ -->
+<!--   ck3<-ck2[ck2$Day==j,] -->
+<!--   sigcytoc1<-c() -->
+<!--   pvalue<-c() -->
+<!--   pvals<-c() -->
+<!--   for(i in cyto_names){ -->
+<!--       cknew3<-ck3[ck3$analyte==i,] -->
+<!--       comparison<-cknew3$Malaria -->
+<!--       pshap<-shapiro.test(cknew3$log10_mfi)$p.value -->
+<!--       if (pshap <0.05){ -->
+<!--           wilc<-wilcox.test(cknew3$log10_mfi ~ comparison)$p.value -->
+<!--           pvals<-c(pvals, wilc) -->
+<!--           #wilc<-p.adjust(wilc) -->
+<!--           if (wilc< 0.05){ -->
+<!--               sigcytoc1<-c(i,wilc,sigcytoc1) -->
+<!--           } -->
+<!--       } -->
+<!--       else{ -->
+<!--           variance<-var.test(cknew3$log10_mfi ~ comparison)$p.value  -->
+<!--           if (variance< 0.05){ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=FALSE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest) -->
+<!--           } -->
+<!--           else{ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=TRUE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest)      -->
+<!--           } -->
+<!--           if (ttest< 0.05){ -->
+<!--               sigcytoc1<-c(i,ttest,sigcytoc1) -->
+<!--               pvalue<-c(ttest,pvalue)} -->
+<!--       }} -->
+<!--   padj<-p.adjust(pvals,method = "fdr") -->
+<!-- dfsignificance<-rbind(dfsignificance,data.frame(Day=j, analyte=unique(cyto_names), padj=padj)) -->
+<!-- } -->
+<!-- dfsignificance<-arrange(dfsignificance,Day,analyte) -->
+<!-- stat.test2 <- ck2%>% -->
+<!--   group_by(analyte, Day) %>% -->
+<!--   t_test(log10_mfi ~ Malaria) %>% -->
+<!--   adjust_pvalue()   -->
+<!-- stat.test2<-arrange(stat.test2,Day,analyte) -->
+<!-- stat.test2$p.adj<-dfsignificance$padj -->
+<!-- stat.test2<-stat.test2%>% -->
+<!--   add_significance("p.adj")  -->
+<!-- stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y")) -->
+<!-- for (i in colnames(ck[18:50])[-24]){ -->
+<!--   var_name_ticked<-paste0("`", i, "`") -->
+<!--   grafic<-ggplot(ck, aes_string("Day", var_name_ticked)) + -->
+<!--           geom_boxplot(position=position_dodge(1), aes(fill=Malaria), outlier.shape = NA) +     geom_point(aes(color = Malaria),position = pd) -->
+<!--   print(grafic+stat_pvalue_manual(stat.test2[stat.test2$analyte==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(ck2$log10_mfi[ck2$analyte==i])))+0.1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15)))) -->
+<!-- }  -->
+<!-- ``` -->
+</div>
+<div id="cytokines" class="section level1">
+<h1>Cytokines</h1>
+<div id="pca-citos-norm" class="section level2">
+<h2>PCA Citos norm</h2>
+<p>Volunteer</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-21-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-21-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-21-3.png" width="672" />
+## PCA Citos norm Plate (Luminex, CXCL13, IL21 i TGFB)</p>
+<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-22-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-22-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-22-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-22-4.png" width="672" /></p>
+</div>
 <div id="citos-normalized-differences-parasitemianot-parasitemia"
-class="section level1">
-<h1>Citos normalized differences parasitemia/not parasitemia</h1>
-<p><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-21.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-22.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-23.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-24.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-25.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-26.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-27.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-28.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-29.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-30.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-31.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-32.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-17-33.png" width="672" /></p>
+class="section level2">
+<h2>Citos normalized differences parasitemia/not parasitemia</h2>
+<p>Timepoints and data:</p>
+<p>-D-1: 36 (11 no parasitemia, 25 parasitemia) -D01: 36 -D07: 36
+-D21/M0: 36 -D22/M1: 36 -D23/M2: 36 -D35: 36 -D90: 0</p>
+<p>#P-values adjusted by FDR (all analytes at each timepoint). *:p.adj
+&lt; 0.05 **: p.adj &lt; 0.01 ***: p.adj &lt; 0.001, ****: p.adj &lt;
+0.0001.
+<img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-1.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-2.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-3.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-4.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-5.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-6.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-7.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-8.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-9.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-10.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-11.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-12.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-13.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-14.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-15.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-16.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-17.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-18.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-19.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-20.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-21.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-22.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-23.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-24.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-25.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-26.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-27.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-28.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-29.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-30.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-31.png" width="672" /><img src="bachmi_descriptiva_files/figure-html/unnamed-chunk-23-32.png" width="672" /></p>
+</div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -381,6 +646,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
