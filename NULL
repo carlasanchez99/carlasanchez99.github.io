@@ -1,0 +1,3 @@
+
+alpha = 0.05
+Reject Ho if p <= alpha/2

@@ -13,6 +13,14 @@ navbar:
       href: Boxplots_clinicak.html
     - text: "High vs low responders"
       href: bachmi_responders.html
+    - text: "Route IV/IM"
+      href: bachmi_route.html
+    - text: "Route IV/IM (only infected)"
+      href: bachmi_route_infected.html
+    - text: "Groups"
+      href: bachmi_groups.html
+    - text: "Groups (only infected)"
+      href: bachmi_groups_infected.html
     - text: "DIABLO DEG & datasets M0 vs D-1"
       href: bachmi_DIABLO_M0vsD-1.html
     - text: "DIABLO BTMs & datasets M0 vs D-1"

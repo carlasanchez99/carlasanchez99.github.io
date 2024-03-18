@@ -1,0 +1,729 @@
+---
+title: "BACHMI GROUPS 25 individuals INFECTED (Group1: 4, Group2: 1, Group3: 2, Group4: 6, Group5: 6, Group6: 6)"
+output:
+  html_document:
+    df_print: paged
+    self_contained: false
+
+date: "2023-06-30"
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(ggpubr)
+library(ggbeeswarm)
+library(rstatix)
+library(ggplot2)
+library(dunn.test)
+group.colors <- c("1" = "#F8766D", "2" = "#B79F00", "3" ="#00BA38", "4" = "#00BFC4", "5" = "#619CFF", "6"="#F564E3")
+
+sigcytoc1<-c()
+gem.cli.df <- readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/NEW_BACHMI_database_20150721_GMP_M0.xlsx")
+gem.cli.df[164,16] <- 37.7
+gem.cli.df[164,17] <- 1
+gem.cli.df[165,16] <- NA
+gem.cli.df[165,17] <- NA
+gem.cli.df[244,31] <- 0
+#gem.cli.df <- gem.cli.df[,-c(21:22)]
+gem.cli.df<-gem.cli.df[gem.cli.df$Malaria=="parasitemia",]
+
+#Readall database and convert variables into factors
+
+cknorm<- read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/ck_bachmi_susana_normalitzat_.csv", sep=";")
+
+colnames(cknorm)[20:49]<-c("G-CSF","GM-CSF","HGF","IFN-α","IFN-γ","IL-10","IL-12","IL-13","IL-15","IL-1RA","IL-2","IL-2R","IL-4","IL-5","IL-6","IL-8","IP-10","MCP-1","MIG","MIP-1α","MIP-1β","RANTES","TNF-α","VEGF","IL-17","IL-1β","IL-7","TGF-β","CXCL13","IL-21")
+
+cknorm<-cknorm[cknorm$Malaria=="parasitemia",]
+
+dc<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/BACHMI DC ALL 22June2015_Susana_frequencies.xlsx")
+dc<-dc[dc$Malaria=="parasitemia",]
+
+igm<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgM_BACHMI01_28aug15_Susana.xlsx")
+igm<-igm[igm$Malaria=="parasitemia",]
+
+igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+igg<-igg[igg$Malaria=="parasitemia",]
+
+
+```
+
+
+
+# Differences hemo by Group only INFECTED
+
+Timepoints and data:
+
+-D-1: 22 (Group1: 4, Group3: 1, Group4: 5, Group5: 6, Group6: 6)
+-D01: 0
+-D07: 0
+-D21/M0: 22 
+-D22/M1: 2 (Group6: 2)
+-D23/M2: 18 (Group1: 2, Group4: 5, Group5: 5, Group6: 6)
+-D35: 22 
+-D90: 22 
+
+#P-values adjusted by FDR (all cell_populations at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D21"|gem.cli.df$Day=="M0", "D21/M0", gem.cli.df$Day)
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D22"|gem.cli.df$Day=="M1", "D22/M1", gem.cli.df$Day)
+ gem.cli.df$Day<-ifelse(gem.cli.df$Day=="D23"|gem.cli.df$Day=="M2", "D23/M2", gem.cli.df$Day)
+ hemo<- gem.cli.df[,c(20:25)]
+
+ hemo2<-gem.cli.df %>%
+  pivot_longer(
+    cols = Hemoglobin:platelet,
+    names_to = 'type',
+    values_to = 'counts')
+hemo2<-hemo2[!hemo2$Day=="D01"& !hemo2$Day=="D07" & !hemo2$Day=="D22/M1",]
+hemo2$Group<-factor(hemo2$Group)
+hemo2<-hemo2[!is.na(hemo2$counts),]
+
+dfsignificance<-c()
+
+for (j in unique(hemo2$Day)){
+  hemo3<-hemo2[hemo2$Day==j,]
+  pvalue<-c()
+  type<-unique(hemo3$type)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      hemonew3<-hemo3[hemo3$type==i,]
+        comparison<-hemonew3$Group
+      pshap<-shapiro.test(hemonew3$counts)$p.value
+      if (pshap >0.05){
+        result_anova <- aov(counts ~ Group, data = hemonew3)
+        p_value_anova <- summary(result_anova)[[1]]$`Pr(>F)`[1]
+           tukey_result <- TukeyHSD(result_anova)
+            sigcytoc1<-c(sigcytoc1,i,j, tukey_result$Group[,4][tukey_result$Group[,4]<0.05])
+            rownames(tukey_result$Group)<-paste(sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[2]), sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[1]), sep="-")
+            group<-rownames(tukey_result$Group)
+            padj<-tukey_result$Group[,4]
+      }
+      else{
+        result_kw <- kruskal.test(counts ~ Group, data = hemonew3)
+         capture.output(result_dunn <-
+                   as.data.frame(dunn.test(hemonew3$counts, hemonew3$Group,
+                       table = FALSE,
+                       kw = FALSE,
+                       label = FALSE,
+                       alpha = 0.05
+                   )), file = "NULL")
+        sigcytoc1<-c(sigcytoc1,i,j,result_dunn$comparisons[result_dunn$P.adjusted<0.05],result_dunn$P.adjusted[result_dunn$P.adjusted<0.05])
+        group<-result_dunn$comparisons
+        padj<-result_dunn$P.adjusted
+      }
+        dfsignificance<-rbind(dfsignificance,data.frame(Day=j, type=i, group=group, padj=padj)) 
+}
+}
+
+dfsignificance<-arrange(dfsignificance,Day,type, group)
+
+hemo4<-hemo2
+p<-hemo4[rep(grep("3", hemo4$Group), 2),]
+p$counts<-runif(48)
+hemo4<-rbind(hemo4,p)
+
+stat.test <- hemo4 %>%
+   group_by(Day, type) %>%
+   t_test(counts ~ Group)
+ 
+ stat.test2<-arrange(stat.test,Day,type, group1)
+ stat.test2$p.adj<-dfsignificance$padj
+ stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+ stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+ gem.cli.df<-gem.cli.df[!gem.cli.df$Group=="2",]
+gem.cli.df$Group<-factor(gem.cli.df$Group)
+gem.cli.df<-gem.cli.df[!gem.cli.df$Day=="D01"& !gem.cli.df$Day=="D07" &!gem.cli.df$Day=="D22/M1",]
+for (i in colnames(gem.cli.df[20:25])[-2]){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(gem.cli.df, aes_string("Day", var_name_ticked)) + ylab(paste(i, "Counts"))+
+          geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()+scale_fill_manual(values=group.colors)+ scale_color_manual(values=group.colors)
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$type==i,], label = "p.adj.signif", hide.ns = TRUE, tip.length = 0.01))
+ } 
+for (i in colnames(gem.cli.df[21])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(gem.cli.df, aes_string("Day", var_name_ticked)) + ylab(paste(i, "Counts"))+
+          geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()+scale_fill_manual(values=group.colors)+ scale_color_manual(values=group.colors)
+  print(grafic)
+ } 
+```
+
+
+
+# Differences DC 
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+ dc$Day<-ifelse(dc$Day=="D21"|dc$Day=="M0", "D21/M0", dc$Day)
+ dc$Day<-ifelse(dc$Day=="D22"|dc$Day=="M1", "D22/M1", dc$Day)
+ dc$Day<-ifelse(dc$Day=="D23"|dc$Day=="M2", "D23/M2", dc$Day)
+```
+Timepoints and data:
+
+-D-1: 25 (Group1: 4, Group2: 1, Group3: 2, Group4: 6, Group5: 6, Group6: 6)
+-D01: 25
+-D07: 25
+-D21/M0: 25 
+-D22/M1: 24 (Group1: 4, Group2: 1, Group3: 2, Group4: 5, Group5: 6, Group6: 6)
+-D23/M2: 25 
+-D35: 25 
+-D90: 25
+
+#P-values adjusted by FDR (all cell_populations at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(dunn.test)
+dc2<-dc %>%
+  pivot_longer(
+    cols = Lymphos:"immature DC",
+    names_to = 'cell_population',
+    values_to = 'freq')
+hemo2$Group<-factor(hemo2$Group)
+sigcytoc1<-c()
+dc2$Group<-factor(dc2$Group)
+
+sigcytoc1<-c()
+dc2$Group<-factor(dc2$Group)
+dfsignificance<-c()
+for (j in unique(dc2$Day)){
+  dc3<-dc2[dc2$Day==j,]
+  pvalue<-c()
+  type<-unique(dc3$cell_population)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      dcnew3<-dc3[dc3$cell_population==i,]
+        comparison<-dcnew3$Group
+      pshap<-shapiro.test(dcnew3$freq)$p.value
+      if (pshap >0.05){
+        result_anova <- aov(freq ~ Group, data = dcnew3)
+        p_value_anova <- summary(result_anova)[[1]]$`Pr(>F)`[1]
+           tukey_result <- TukeyHSD(result_anova)
+            sigcytoc1<-c(sigcytoc1,i,j, tukey_result$Group[,4][tukey_result$Group[,4]<0.05])
+            rownames(tukey_result$Group)<-paste(sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[2]), sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[1]), sep="-")
+            group<-rownames(tukey_result$Group)
+            padj<-tukey_result$Group[,4]
+      }
+      else{
+        result_kw <- kruskal.test(freq ~ Group, data = dcnew3)
+         capture.output(result_dunn <-
+                   as.data.frame(dunn.test(dcnew3$freq, dcnew3$Group,
+                       table = FALSE,
+                       kw = FALSE,
+                       label = FALSE,
+                       alpha = 0.05
+                   )), file = "NULL")
+        sigcytoc1<-c(sigcytoc1,i,j,result_dunn$comparisons[result_dunn$P.adjusted<0.05],result_dunn$P.adjusted[result_dunn$P.adjusted<0.05])
+        group<-result_dunn$comparisons
+        padj<-result_dunn$P.adjusted
+      }
+        dfsignificance<-rbind(dfsignificance,data.frame(Day=j, cell_population=i, group=group, padj=padj)) 
+}
+}
+
+dfsignificance<-arrange(dfsignificance,Day,cell_population, group)
+
+dc4<-dc2
+p<-dc4[rep(grep("2", dc4$Group), 2),]
+p$freq<-runif(192)
+dc4<-rbind(dc4,p)
+stat.test <- dc4 %>%
+  group_by(Day, cell_population) %>%
+  t_test(freq ~ Group)
+
+stat.test2<-arrange(stat.test,Day,cell_population, group1)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+dc$Group<-factor(dc$Group)
+for (i in colnames(dc[13:24])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(dc, aes_string("Day", var_name_ticked)) + ylab(paste("Frequency ",i, "(%)"))+
+    geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()
+print(grafic+stat_pvalue_manual(stat.test2[stat.test2$cell_population==i,], label = "p.adj.signif", hide.ns = TRUE, tip.length = 0.01))
+ } 
+```
+
+
+# Differences IgG & IgM 
+
+All timepoints 25 participants (Group1: 4, Group2: 1, Group3: 2, Group4: 6, Group5: 6, Group6: 6). 
+
+P-values adjusted by FDR (all antibodies at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+igm[15:36]<-sapply(igm[15:36], log10)
+igm$Day<-ifelse(igm$Day=="D21"|igm$Day=="M0", "D21/M0", igm$Day)
+igm$Day<-ifelse(igm$Day=="D22"|igm$Day=="M1", "D22/M1", igm$Day)
+igm$Day<-ifelse(igm$Day=="D23"|igm$Day=="M2", "D23/M2", igm$Day)
+colnames(igm)[15:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4", "PfRH5","MSP-1 19","BSA","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2", "DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igm2<-igm %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+
+igm2$fullname<-paste(igm2$Ig, igm2$antigen, sep="_")
+
+igg[16:36]<-sapply(igg[16:36], log10)
+igg$Day<-ifelse(igg$Day=="D21"|igg$Day=="M0", "D21/M0", igg$Day)
+igg$Day<-ifelse(igg$Day=="D22"|igg$Day=="M1", "D22/M1", igg$Day)
+igg$Day<-ifelse(igg$Day=="D23"|igg$Day=="M2", "D23/M2", igg$Day)
+colnames(igg)[16:36]<-c("MSP-3","PTRAMP","PfAARP","PfRH1","PfRH2","PfRH4", "PfRH5","MSP-1 19","AMA-1[3D7]","AMA-1[FVO]","MSP-1 42[3D7]","MSP-1 42[FVO]","EBA-175","CelTOS","LSA-1","SSP-2", "DBLa","CSP","CyRPA-1","CyRPA-2","EXP-1")
+igg2<-igg %>%
+  pivot_longer(
+    cols = "MSP-3":"EXP-1",
+    names_to = 'antigen',
+    values_to = 'log10_conc')
+igg2$fullname<-paste(igg2$Ig, igg2$antigen, sep="_")
+igg2<-igg2[,-15]
+ig2<-rbind(igm2, igg2)
+sigcytoc1<-c()
+ig2$Group<-factor(ig2$Group)
+
+sigcytoc1<-c()
+ig2$Group<-factor(ig2$Group)
+dfsignificance<-c()
+for (j in unique(ig2$Day)){
+  ig3<-ig2[ig2$Day==j,]
+  pvalue<-c()
+  type<-unique(ig3$fullname)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      ignew3<-ig3[ig3$fullname==i,]
+        comparison<-ignew3$Group
+      pshap<-shapiro.test(ignew3$log10_conc)$p.value
+      if (pshap >0.05){
+        result_anova <- aov(log10_conc ~ Group, data = ignew3)
+        p_value_anova <- summary(result_anova)[[1]]$`Pr(>F)`[1]
+           tukey_result <- TukeyHSD(result_anova)
+            sigcytoc1<-c(sigcytoc1,i,j, tukey_result$Group[,4][tukey_result$Group[,4]<0.05])
+            rownames(tukey_result$Group)<-paste(sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[2]), sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[1]), sep="-")
+            group<-rownames(tukey_result$Group)
+            padj<-tukey_result$Group[,4]
+      }
+      else{
+        result_kw <- kruskal.test(log10_conc ~ Group, data = ignew3)
+        #result_dunn<-dunn.test(ignew3$log10_conc, ignew3$Group, table=FALSE, kw=FALSE, label=FALSE)
+         capture.output(result_dunn <-
+                   as.data.frame(dunn.test(ignew3$log10_conc, ignew3$Group,
+                       table = FALSE,
+                       kw = FALSE,
+                       label = FALSE,
+                       alpha = 0.05
+                   )), file = "NULL")
+        sigcytoc1<-c(sigcytoc1,i,j,result_dunn$comparisons[result_dunn$P.adjusted<0.05],result_dunn$P.adjusted[result_dunn$P.adjusted<0.05])
+        group<-result_dunn$comparisons
+        padj<-result_dunn$P.adjusted
+      }
+        dfsignificance<-rbind(dfsignificance,data.frame(Day=j, fullname=i, group=group, padj=padj)) 
+}
+}
+
+dfsignificance<-arrange(dfsignificance,Day,fullname, group)
+
+ig4<-ig2
+p<-ig4[rep(grep("2", ig4$Group), 2),]
+p$log10_conc<-runif(688)
+ig4<-rbind(ig4,p)
+stat.test <- ig4 %>%
+  group_by(Day, fullname) %>%
+  t_test(log10_conc ~ Group)
+
+
+stat.test <- ig4 %>%
+  group_by(Day, fullname) %>%
+  t_test(log10_conc ~ Group)
+
+stat.test2<-arrange(stat.test,Day,fullname, group1)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+
+
+
+colnames(igg)[16:36]<-paste("IgG",colnames(igg)[16:36], sep="_")
+igg$Group<-factor(igg$Group)
+
+for (i in colnames(igg[16:36])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(igg, aes_string("Day",var_name_ticked)) + ylab(paste("log10(",i, ")"))+
+          geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$fullname==i,], label = "p.adj.signif", hide.ns = TRUE))
+} 
+
+colnames(igm)[15:36]<-paste("IgM",colnames(igm)[15:36], sep="_")
+igm$Group<-factor(igm$Group)
+for (i in colnames(igm[15:36])){
+  var_name_ticked<-paste0("`", i, "`")
+  grafic<-ggplot(igm, aes_string("Day", var_name_ticked)) + ylab(paste("log10(",i, ")"))+
+          geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()
+  print(grafic+stat_pvalue_manual(stat.test2[stat.test2$fullname==i,], label = "p.adj.signif", hide.ns = TRUE,  tip.length = 0.01))
+} 
+```
+
+
+
+
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- ck$Day[37]<-"D22" -->
+<!-- ck$Day<-ifelse(ck$Day=="D21"|ck$Day=="M0", "D21/M0", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D22"|ck$Day=="M1", "D22/M1", ck$Day) -->
+<!-- ck$Day<-ifelse(ck$Day=="D23"|ck$Day=="M2", "D23/M2", ck$Day) -->
+<!-- ``` -->
+
+
+
+<!-- # Citos not normalized differences -->
+
+<!-- Timepoints and data: -->
+
+<!-- -D-1: 36 (16 male, 20 female) -->
+<!-- -D01: 36 -->
+<!-- -D07: 36 -->
+<!-- -D21/M0: 36  -->
+<!-- -D22/M1: 36  -->
+<!-- -D23/M2: 36  -->
+<!-- -D35: 36  -->
+<!-- -D90: 0 -->
+
+<!-- #P-values adjusted by FDR (all analytes at each timepoint).  -->
+<!--  \*:p.adj < 0.05 -->
+<!--  \*\*: p.adj < 0.01 -->
+<!--  \*\*\*: p.adj < 0.001,  -->
+<!--  \*\*\*\*: p.adj < 0.0001.  -->
+
+<!-- ```{r, message=FALSE, warning=FALSE, echo=FALSE} -->
+<!-- ck<- ck[c(colnames(ck[1:17]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")] -->
+<!-- ck[18:50]<-sapply(ck[18:50], log10) -->
+<!-- ck2<-ck %>% -->
+<!--   pivot_longer( -->
+<!--     cols = EGF:CXCL13, -->
+<!--     names_to = 'analyte', -->
+<!--     values_to = 'log10_mfi') -->
+<!-- ck2$analyte<- factor(ck2$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")) -->
+
+<!-- ck2<-ck2[!ck2$Day=="D90",] -->
+<!-- ck2<-ck2[!ck2$analyte=="IL-17",] -->
+
+<!-- cyto_names<-unique(ck2$analyte) -->
+<!-- dfsignificance<-c() -->
+<!-- for (j in unique(ck2$Day)){ -->
+<!--   ck3<-ck2[ck2$Day==j,] -->
+<!--   sigcytoc1<-c() -->
+<!--   pvalue<-c() -->
+<!--   pvals<-c() -->
+<!--   for(i in cyto_names){ -->
+<!--       cknew3<-ck3[ck3$analyte==i,] -->
+<!--       comparison<-cknew3$sex -->
+<!--       pshap<-shapiro.test(cknew3$log10_mfi)$p.value -->
+<!--       if (pshap <0.05){ -->
+<!--           wilc<-wilcox.test(cknew3$log10_mfi ~ comparison)$p.value -->
+<!--           pvals<-c(pvals, wilc) -->
+<!--           #wilc<-p.adjust(wilc) -->
+<!--           if (wilc< 0.05){ -->
+<!--               sigcytoc1<-c(i,wilc,sigcytoc1) -->
+<!--           } -->
+<!--       } -->
+<!--       else{ -->
+<!--           variance<-var.test(cknew3$log10_mfi ~ comparison)$p.value  -->
+<!--           if (variance< 0.05){ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=FALSE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest) -->
+
+<!--           } -->
+<!--           else{ -->
+<!--               ttest<-t.test(cknew3$log10_mfi ~ comparison, var.equal=TRUE)$p.value -->
+<!--               #ttest<-p.adjust(ttest) -->
+<!--               pvals<-c(pvals, ttest)      -->
+<!--           } -->
+<!--           if (ttest< 0.05){ -->
+<!--               sigcytoc1<-c(i,ttest,sigcytoc1) -->
+<!--               pvalue<-c(ttest,pvalue)} -->
+<!--       }} -->
+<!--   padj<-p.adjust(pvals,method = "fdr") -->
+<!-- dfsignificance<-rbind(dfsignificance,data.frame(Day=j, analyte=unique(cyto_names), padj=padj)) -->
+<!-- } -->
+<!-- dfsignificance<-arrange(dfsignificance,Day,analyte) -->
+
+<!-- stat.test2 <- ck2%>% -->
+<!--   group_by(analyte, Day) %>% -->
+<!--   t_test(log10_mfi ~ sex) %>% -->
+<!--   adjust_pvalue()   -->
+<!-- stat.test2<-arrange(stat.test2,Day,analyte) -->
+<!-- stat.test2$p.adj<-dfsignificance$padj -->
+<!-- stat.test2<-stat.test2%>% -->
+<!--   add_significance("p.adj")  -->
+
+<!-- stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y")) -->
+
+
+<!-- for (i in colnames(ck[18:50])[-24]){ -->
+<!--   var_name_ticked<-paste0("`", i, "`") -->
+<!--   grafic<-ggplot(ck, aes_string("Day", var_name_ticked)) + -->
+<!--           geom_boxplot(position=position_dodge(1), aes(fill=sex)) -->
+<!--   print(grafic+stat_pvalue_manual(stat.test2[stat.test2$analyte==i,], label = "p.adj.signif", hide.ns = TRUE,  y.position = max((na.omit(ck2$log10_mfi[ck2$analyte==i])))+0.1) +scale_y_continuous(expand = expansion(mult = c(0.05, 0.15)))) -->
+<!-- }  -->
+<!-- ``` -->
+
+
+
+# Citos normalized differences 
+
+
+Timepoints and data:
+
+All timepoints 25 participants (Group1: 4, Group2: 1, Group3: 2, Group4: 6, Group5: 6, Group6: 6). 
+
+
+#P-values adjusted by FDR (all analytes at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001. 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+cknorm<- cknorm[c(colnames(cknorm[1:16]),"EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13")]
+cknorm$Day<-ifelse(cknorm$Day=="D21"|cknorm$Day=="M0", "D21/M0", cknorm$Day)
+cknorm$Day<-ifelse(cknorm$Day=="D22"|cknorm$Day=="M1", "D22/M1", cknorm$Day)
+cknorm$Day<-ifelse(cknorm$Day=="D23"|cknorm$Day=="M2", "D23/M2", cknorm$Day)
+cknorm[17:49]<-sapply(cknorm[17:49], log10)
+cknorm2<-cknorm %>%
+  pivot_longer(
+    cols = EGF:CXCL13,
+    names_to = 'analyte',
+    values_to = 'log10_mfi')
+cknorm2$analyte<- factor(cknorm2$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13"))
+
+cknorm2<-cknorm2[!cknorm2$Day=="D90",]
+cknorm2<-cknorm2[!cknorm2$analyte=="IL-17",]
+
+cyto_names<-unique(cknorm2$analyte)
+
+sigcytoc1<-c()
+cknorm2$Group<-factor(cknorm2$Group)
+dfsignificance<-c()
+for (j in unique(cknorm2$Day)){
+  cknorm3<-cknorm2[cknorm2$Day==j,]
+  pvalue<-c()
+  type<-unique(cknorm3$analyte)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      cknormnew3<-cknorm3[cknorm3$analyte==i,]
+        comparison<-cknormnew3$Group
+      pshap<-shapiro.test(cknormnew3$log10_mfi)$p.value
+      if (pshap >0.05){
+        result_anova <- aov(log10_mfi ~ Group, data = cknormnew3)
+        p_value_anova <- summary(result_anova)[[1]]$`Pr(>F)`[1]
+           tukey_result <- TukeyHSD(result_anova)
+            sigcytoc1<-c(sigcytoc1,i,j, tukey_result$Group[,4][tukey_result$Group[,4]<0.05])
+            rownames(tukey_result$Group)<-paste(sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[2]), sapply(strsplit(rownames(tukey_result$Group), "-"), function(x) x[1]), sep="-")
+            group<-rownames(tukey_result$Group)
+            padj<-tukey_result$Group[,4]
+      }
+      else{
+        result_kw <- kruskal.test(log10_mfi ~ Group, data = cknormnew3)
+       # result_dunn<-dunn.test(cknormnew3$log10_mfi, cknormnew3$Group, table=FALSE, kw=FALSE, label=FALSE)
+        capture.output(result_dunn <-
+                   as.data.frame(dunn.test(cknormnew3$log10_mfi, cknormnew3$Group,
+                       table = FALSE,
+                       kw = FALSE,
+                       label = FALSE,
+                       alpha = 0.05
+                   )), file = "NULL")
+
+        sigcytoc1<-c(sigcytoc1,i,j,result_dunn$comparisons[result_dunn$P.adjusted<0.05],result_dunn$P.adjusted[result_dunn$P.adjusted<0.05])
+        group<-result_dunn$comparisons
+        padj<-result_dunn$P.adjusted
+      }
+        dfsignificance<-rbind(dfsignificance,data.frame(Day=j, analyte=i, group=group, padj=padj)) 
+}
+}
+
+dfsignificance$analyte<- factor(dfsignificance$analyte, levels = c("EGF", "FGF", "G-CSF", "GM-CSF","HGF","VEGF","TNF-α","TGF-β","IFN-α", "IFN-γ", "IL-1RA", "IL-1β", "IL-2","IL-2R","IL-4","IL-5","IL-6","IL-7","IL-8","IL-10","IL-12","IL-13","IL-15", "IL-17","IL-21", "IP-10", "MCP-1", "MIG","MIP-1α", "MIP-1β", "EOTAXIN", "RANTES","CXCL13"))
+dfsignificance<-arrange(dfsignificance,Day,analyte, group)
+
+cknorm4<-cknorm2
+p<-cknorm4[rep(grep("2", cknorm4$Group), 2),]
+p$log10_mfi<-runif(448)
+cknorm4<-rbind(cknorm4,p)
+stat.test <- cknorm4 %>%
+  group_by(Day, analyte) %>%
+  t_test(log10_mfi ~ Group)
+
+stat.test2<-arrange(stat.test,Day,analyte, group1)
+
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+cknorm$Group<-factor(cknorm$Group)
+for (i in colnames(cknorm[17:49])[-24]){
+var_name_ticknormed<-paste0("`", i, "`")
+cknorm<-cknorm[!cknorm$Day=="D90",]
+grafic<-ggplot(cknorm, aes_string("Day", var_name_ticknormed)) + ylab(paste("log10(",i, ")"))+
+    geom_boxplot(position=position_dodge(1), aes(fill=Group), outlier.shape = NA, alpha=0.6) +   geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = Group))+ theme_bw()
+print(grafic+stat_pvalue_manual(stat.test2[stat.test2$analyte==i,], label = "p.adj.signif", hide.ns = TRUE,  tip.length = 0.01))
+        
+} 
+
+```
+
+
+# IgG1 & IgG3 differences Groups
+
+
+Timepoints and data (depending on antigen, maximum 18):
+
+-D-1: 18 (Group1: 4, Group3: 2, Group4: 4, Group5: 4, Group6: 4)
+-D01: 18
+-D07: 18
+-M0: 18
+-M1: 18
+-M2: 18
+-D35: 18
+-D90: 18
+
+#P-values adjusted by FDR (all analytes at each timepoint). 
+ \*:p.adj < 0.05
+ \*\*: p.adj < 0.01
+ \*\*\*: p.adj < 0.001, 
+ \*\*\*\*: p.adj < 0.0001.
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+igg<-readxl::read_xlsx("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG_BACHMI01_7sept15_Guerau.xlsx")
+igg1<-read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG1_BACHMI_v02_CarlaS_2023-11-30.csv", sep=";")
+igg3<-read.csv("C:/Users/csanchez1/Desktop/BACHMI/Datasets/IgG3_BACHMI_v02_CarlaS_2023-11-30.csv", sep=",")
+igg13<-rbind(igg1, igg3)
+igg13<-igg13[-15]
+igg13<-merge(x = igg13, y = unique(cknorm[ , c("Volunteer", "Group")]), by = "Volunteer")
+igg13.2<-igg13 %>%
+  pivot_longer(
+    cols = "MSP3":"EXP1",
+    names_to = 'antigen',
+    values_to = 'log10_mfi')
+igg13.2<-igg13.2[igg13.2$log10_mfi<26486.5229,]
+igg13.2$log10_mfi<- log10(igg13.2$log10_mfi)
+igg13.2$fullname<-paste(igg13.2$Ig, igg13.2$antigen, sep="-")
+igg13.2$Day<-ifelse(igg13.2$Day=="D1", "D01", igg13.2$Day)
+igg13.2$Day<-ifelse(igg13.2$Day=="D7", "D07", igg13.2$Day)
+igg13.2<-igg13.2[!is.na(igg13.2$log10_mfi),]
+igg13.2<-igg13.2[!igg13.2$log10_mfi=="-Inf",]
+
+igg13.2$Day<-factor(igg13.2$Day, levels=c("D-1", "D01", "D07", "M0", "M1", "M2", "D35", "D90"))
+
+igg13.2<-igg13.2[!(igg13.2$fullname=="IgG3-LSA1"& igg13.2$Day=="D01"),]  #Tots els low tenen NAja que els valos abans de 
+
+```
+
+## 1. Boxplots of the significant different IgG1 & IgG3 (pval<0.05)
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+igg13.2<-igg13.2[!(igg13.2$fullname=="IgG3-PfRH5"),]
+igg13.2<-igg13.2[!(igg13.2$fullname=="IgG3-PfRH4"),]
+
+igg13.2<-igg13.2[!(igg13.2$fullname=="IgG3-MSP1_42_3D7" & igg13.2$Day=="M0"),]
+igg13.2<-igg13.2[!(igg13.2$fullname=="IgG3-AMA1_3D7" & igg13.2$Day=="D35"),]
+
+sigcytoc1<-c()
+igg13.2$group<-factor(igg13.2$group)
+dfsignificance<-c()
+for (j in unique(igg13.2$Day)){
+  igg13.3<-igg13.2[igg13.2$Day==j,]
+  pvalue<-c()
+  type<-unique(igg13.3$fullname)
+  #cyto_names<-cyto_names[-25]
+  pvals<-c()
+  for(i in type){
+      ignew3<-igg13.3[igg13.3$fullname==i,]
+        comparison<-ignew3$group
+      pshap<-shapiro.test(ignew3$log10_mfi)$p.value
+      if (pshap >0.05){
+        result_anova <- aov(log10_mfi ~ group, data = ignew3)
+        p_value_anova <- summary(result_anova)[[1]]$`Pr(>F)`[1]
+           tukey_result <- TukeyHSD(result_anova)
+            sigcytoc1<-c(sigcytoc1,i,j, tukey_result$group[,4][tukey_result$group[,4]<0.05])
+            rownames(tukey_result$group)<-paste(sapply(strsplit(rownames(tukey_result$group), "-"), function(x) x[2]), sapply(strsplit(rownames(tukey_result$group), "-"), function(x) x[1]), sep="-")
+            group<-rownames(tukey_result$group)
+            padj<-tukey_result$group[,4]
+      }
+      else{
+        result_kw <- kruskal.test(log10_mfi ~ group, data = ignew3)
+        #result_dunn<-dunn.test(ignew3$log10_mfi, ignew3$group, table=FALSE, kw=FALSE, label=FALSE)
+         capture.output(result_dunn <-
+                   as.data.frame(dunn.test(ignew3$log10_mfi, ignew3$group,
+                       table = FALSE,
+                       kw = FALSE,
+                       label = FALSE,
+                       alpha = 0.05
+                   )), file = "NULL")
+        sigcytoc1<-c(sigcytoc1,i,j,result_dunn$comparisons[result_dunn$P.adjusted<0.05],result_dunn$P.adjusted[result_dunn$P.adjusted<0.05])
+        group<-result_dunn$comparisons
+        padj<-result_dunn$P.adjusted
+      }
+        dfsignificance<-rbind(dfsignificance,data.frame(Day=j, fullname=i, group=group, padj=padj)) 
+}
+}
+
+dfsignificance<-arrange(dfsignificance,Day,fullname, group)
+
+igg13.4<-igg13.2
+p<-igg13.4[rep(grep("1", igg13.4$group), 2),]
+p$log10_mfi<-runif(1834)
+igg13.4<-rbind(igg13.4,p)
+
+
+stat.test2 <- igg13.4%>%
+  group_by(fullname, Day) %>%
+  wilcox_test(log10_mfi ~ group) %>%
+  adjust_pvalue() 
+
+stat.test2<-arrange(stat.test2,Day,fullname)
+stat.test2$p.adj<-dfsignificance$padj
+stat.test2<-stat.test2%>%
+  add_significance("p.adj") 
+
+stat.test2 <- stat.test2 %>% add_xy_position(x = "Day", scales = c("free_y"))
+
+for (i in unique(dfsignificance$fullname)){
+    subset_data<-subset(igg13.2, fullname==i)
+    grafic<-ggplot(subset_data, aes(x=Day, y=log10_mfi)) +
+        #facet_wrap(~ analyte) +
+        xlab("Day")+
+        ylab(bquote("log" [10] (mfi)))+
+        geom_boxplot(position=position_dodge(1), aes(fill=group), outlier.shape = NA, alpha=0.6)+    geom_point(position=position_jitterdodge(jitter.width = 0.5), aes(color = group))+ theme_bw()+ scale_fill_manual(values=group.colors)+ scale_color_manual(values=group.colors)+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+              legend.position = "bottom", legend.direction = "horizontal") +
+        ggtitle(i) 
+print(grafic+stat_pvalue_manual(stat.test2[stat.test2$fullname==i,], label = "p.adj.signif", hide.ns = TRUE,  tip.length = 0.01))
+} 
+
+```
